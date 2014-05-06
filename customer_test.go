@@ -17,16 +17,16 @@ func init() {
 var (
 	// Customer with only the required fields
 	cust1 = CustomerParams{
-		Email: "test1@test.com",
-		Desc:  "a test customer",
+		Email:       "test1@test.com",
+		Description: "a test customer",
 	}
 
 	// Customer with all required fields + required credit card fields.
 	cust2 = CustomerParams{
-		Email:  "test2@test.com",
-		Desc:   "a 2nd test customer",
-		Coupon: c1.Id,
-		Plan:   p1.Id,
+		Email:       "test2@test.com",
+		Description: "a 2nd test customer",
+		Coupon:      c1.ID,
+		Plan:        p1.ID,
 		Card: &CardParams{
 			Name:     "John Smith",
 			Number:   "4242424242424242",
@@ -37,14 +37,14 @@ var (
 
 	// Another Customer with only the required fields
 	cust3 = CustomerParams{
-		Email: "test3@test.com",
-		Desc:  "a 3rd test customer",
+		Email:       "test3@test.com",
+		Description: "a 3rd test customer",
 	}
 
 	// A customer with the required fields + a credit card
 	cust4 = CustomerParams{
-		Email: "test3@test.com",
-		Desc:  "a 3rd test customer",
+		Email:       "test3@test.com",
+		Description: "a 3rd test customer",
 		Card: &CardParams{
 			Name:     "John Smith",
 			Number:   "4242424242424242",
@@ -60,16 +60,16 @@ var (
 func TestCreateCustomer(t *testing.T) {
 	// Create the customer, and defer its deletion
 	cust, err := Customers.Create(&cust1)
-	defer Customers.Delete(cust.Id)
+	defer Customers.Delete(cust.ID)
 
 	if err != nil {
 		t.Errorf("Expected Customer, got Error %s", err.Error())
 	}
-	if string(cust.Email) != cust1.Email {
+	if cust.Email != cust1.Email {
 		t.Errorf("Expected Customer Email %s, got %v", cust1.Email, cust.Email)
 	}
-	if string(cust.Desc) != cust1.Desc {
-		t.Errorf("Expected Customer Desc %s, got %v", cust1.Desc, cust.Desc)
+	if cust.Description != cust1.Description {
+		t.Errorf("Expected Customer Desc %s, got %v", cust1.Description, cust.Description)
 	}
 }
 
@@ -82,22 +82,22 @@ func TestCreateCustomerToken(t *testing.T) {
 
 	// Create a Charge that uses a Token
 	cust := CustomerParams{
-		Token: token.Id,
-		Desc:  "Customer for site@stripe.com",
+		Token:       token.ID,
+		Description: "Customer for site@stripe.com",
 	}
 
 	// Create the charge
 	resp, err := Customers.Create(&cust)
-	defer Customers.Delete(resp.Id)
+	defer Customers.Delete(resp.ID)
 	if err != nil {
 		t.Errorf("Expected Create Customer, got Error %s", err.Error())
 	}
-	if resp.Card == nil {
+	if len(resp.Cards.Data) == 0 {
 		t.Errorf("Expected Customer Card from Token, got nil")
 	}
 	// Sanity check to make sure card was attached to customer
-	if string(resp.Card.Name) != string(token.Card.Name) {
-		t.Errorf("Expected Card Name %s, got %v", token.Card.Name, resp.Card.Name)
+	if resp.Cards.Data[0].Name != token.Card.Name {
+		t.Errorf("Expected Card Name %s, got %v", token.Card.Name, resp.Cards.Data[0].Name)
 	}
 }
 
@@ -108,47 +108,47 @@ func TestRetrieveCustomer(t *testing.T) {
 	// setup default plans and coupons, defer deletion
 	Plans.Create(&p1)
 	Coupons.Create(&c1)
-	defer Plans.Delete(p1.Id)
-	defer Coupons.Delete(c1.Id)
+	defer Plans.Delete(p1.ID)
+	defer Coupons.Delete(c1.ID)
 
 	// Create the customer, and defer its deletion
 	resp, err := Customers.Create(&cust2)
-	defer Customers.Delete(resp.Id)
+	defer Customers.Delete(resp.ID)
 	if err != nil {
 		t.Errorf("Expected Customer, got Error %s", err.Error())
 		return
 	}
 
-	// Retrieve the Customer by Id
-	cust, err := Customers.Retrieve(resp.Id)
+	// Retrieve the Customer by ID
+	cust, err := Customers.Retrieve(resp.ID)
 	if err != nil {
 		t.Errorf("Expected Customer, got Error %s", err.Error())
 	}
-	if string(cust.Email) != cust2.Email {
+	if cust.Email != cust2.Email {
 		t.Errorf("Expected Customer Email %s, got %v", cust2.Email, cust.Email)
 	}
-	if string(cust.Desc) != cust2.Desc {
-		t.Errorf("Expected Customer Desc %s, got %v", cust2.Desc, cust.Desc)
+	if cust.Description != cust2.Description {
+		t.Errorf("Expected Customer Desc %s, got %v", cust2.Description, cust.Description)
 	}
-	if cust.Card == nil {
+	if len(cust.Cards.Data) == 0 {
 		t.Errorf("Expected Credit Card %s, got nil", cust2.Card.Number)
 		return
 	}
 
-	if string(cust.Card.Name) != cust2.Card.Name {
-		t.Errorf("Expected Card Name %s, got %s", cust2.Card.Name, cust.Card.Name)
+	if cust.Cards.Data[0].Name != cust2.Card.Name {
+		t.Errorf("Expected Card Name %s, got %s", cust2.Card.Name, cust.Cards.Data[0].Name)
 	}
-	if cust.Card.Last4 != "4242" {
-		t.Errorf("Expected Card Last4 %d, got %d", "4242", cust.Card.Last4)
+	if cust.Cards.Data[0].Last4 != "4242" {
+		t.Errorf("Expected Card Last4 %d, got %d", "4242", cust.Cards.Data[0].Last4)
 	}
-	if cust.Card.ExpYear != cust2.Card.ExpYear {
-		t.Errorf("Expected Card ExpYear %d, got %d", cust2.Card.ExpYear, cust.Card.ExpYear)
+	if cust.Cards.Data[0].ExpYear != cust2.Card.ExpYear {
+		t.Errorf("Expected Card ExpYear %d, got %d", cust2.Card.ExpYear, cust.Cards.Data[0].ExpYear)
 	}
-	if cust.Card.ExpMonth != cust2.Card.ExpMonth {
-		t.Errorf("Expected Card ExpMonth %d, got %d", cust2.Card.ExpMonth, cust.Card.ExpMonth)
+	if cust.Cards.Data[0].ExpMonth != cust2.Card.ExpMonth {
+		t.Errorf("Expected Card ExpMonth %d, got %d", cust2.Card.ExpMonth, cust.Cards.Data[0].ExpMonth)
 	}
-	if cust.Card.Type != Visa {
-		t.Errorf("Expected Card Type %s, got %s", Visa, cust.Card.Type)
+	if cust.Cards.Data[0].Type != Visa {
+		t.Errorf("Expected Card Type %s, got %s", Visa, cust.Cards.Data[0].Type)
 	}
 }
 
@@ -157,10 +157,10 @@ func TestRetrieveCustomer(t *testing.T) {
 func TestUpdateCustomer(t *testing.T) {
 	// Create the Customer, and defer its deletion
 	resp, _ := Customers.Create(&cust1)
-	defer Customers.Delete(resp.Id)
+	defer Customers.Delete(resp.ID)
 
-	balance := int64(-100)
-	cust, err := Customers.Update(resp.Id, &CustomerParams{Email: "joe@email.com", Balance: &balance})
+	balance := -100
+	cust, err := Customers.Update(resp.ID, &CustomerParams{Email: "joe@email.com", Balance: &balance})
 	if err != nil {
 		t.Errorf("Expected Customer update, got Error %s", err.Error())
 	}
@@ -178,10 +178,10 @@ func TestUpdateCustomer(t *testing.T) {
 func TestDeleteCustomer(t *testing.T) {
 	// Create the Customer, and defer its deletion
 	resp, _ := Customers.Create(&cust1)
-	defer Customers.Delete(resp.Id)
+	defer Customers.Delete(resp.ID)
 
 	// let's try to delete the customer
-	ok, err := Customers.Delete(resp.Id)
+	ok, err := Customers.Delete(resp.ID)
 	if err != nil {
 		t.Errorf("Expected Customer deletion, got Error %s", err.Error())
 	}
@@ -198,8 +198,8 @@ func TestListCustomers(t *testing.T) {
 	// create 2 dummy customers that we can retrieve
 	resp1, _ := Customers.Create(&cust1)
 	resp2, _ := Customers.Create(&cust3)
-	defer Customers.Delete(resp1.Id)
-	defer Customers.Delete(resp2.Id)
+	defer Customers.Delete(resp1.ID)
+	defer Customers.Delete(resp2.ID)
 
 	// get the list from Stripe
 	customers, err := Customers.ListN(2, 0)

@@ -16,14 +16,16 @@ const (
 //
 // see https://stripe.com/docs/api#coupon_object
 type Coupon struct {
-	Id               string `json:"id"`
-	Duration         string `json:"duration"`
-	PercentOff       int    `json:"percent_off"`
-	DurationInMonths Int    `json:"duration_in_months,omitempty"`
-	MaxRedemptions   Int    `json:"max_redemptions,omitempty"`
-	RedeemBy         Int64  `json:"redeem_by,omitempty"`
-	TimesRedeemed    int    `json:"times_redeemed,omitempty"`
-	Livemode         bool   `json:"livemode"`
+	ID               string
+	Duration         string
+	AmountOff        int      `json:"amount_off"`
+	PercentOff       int      `json:"percent_off"`
+	DurationInMonths int      `json:"duration_in_months"`
+	MaxRedemptions   int      `json:"max_redemptions"`
+	RedeemBy         UnixTime `json:"redeem_by"`
+	TimesRedeemed    int      `json:"times_redeemed"`
+	Livemode         bool
+	Created          UnixTime
 }
 
 // CouponClient encapsulates operations for creating, updating, deleting and
@@ -33,8 +35,8 @@ type CouponClient struct{}
 // CouponParams encapsulates options for creating a new Coupon.
 type CouponParams struct {
 	// (Optional) Unique string of your choice that will be used to identify
-	// this coupon when applying it a customer. 
-	Id string
+	// this coupon when applying it a customer.
+	ID string
 
 	// A positive integer between 1 and 100 that represents the discount the
 	// coupon will apply.
@@ -56,13 +58,13 @@ type CouponParams struct {
 	// (Optional) UTC timestamp specifying the last time at which the coupon can
 	// be redeemed. After the redeem_by date, the coupon can no longer be
 	// applied to new customers.
-	RedeemBy int64
+	RedeemBy *UnixTime
 }
 
 // Creates a new Coupon.
 //
 // see https://stripe.com/docs/api#create_coupon
-func (self *CouponClient) Create(params *CouponParams) (*Coupon, error) {
+func (c *CouponClient) Create(params *CouponParams) (*Coupon, error) {
 	coupon := Coupon{}
 	values := url.Values{
 		"duration":    {params.Duration},
@@ -70,8 +72,8 @@ func (self *CouponClient) Create(params *CouponParams) (*Coupon, error) {
 	}
 
 	// coupon id is optional, add if specified
-	if len(params.Id) != 0 {
-		values.Add("id", params.Id)
+	if len(params.ID) != 0 {
+		values.Add("id", params.ID)
 	}
 
 	// duration in months is optional, add if specified
@@ -85,19 +87,19 @@ func (self *CouponClient) Create(params *CouponParams) (*Coupon, error) {
 	}
 
 	// redeem_by is optional, add if specified
-	if params.RedeemBy != 0 {
-		values.Add("redeem_by", strconv.FormatInt(params.RedeemBy, 10))
+	if params.RedeemBy != nil {
+		values.Add("redeem_by", strconv.FormatInt(params.RedeemBy.Unix(), 10))
 	}
-	err := query("POST", "/v1/coupons", values, &coupon)
+	err := query("POST", "/coupons", values, &coupon)
 	return &coupon, err
 }
 
 // Retrieves the coupon with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_coupon
-func (self *CouponClient) Retrieve(id string) (*Coupon, error) {
+func (c *CouponClient) Retrieve(id string) (*Coupon, error) {
 	coupon := Coupon{}
-	path := "/v1/coupons/" + url.QueryEscape(id)
+	path := "/coupons/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &coupon)
 	return &coupon, err
 }
@@ -105,9 +107,9 @@ func (self *CouponClient) Retrieve(id string) (*Coupon, error) {
 // Deletes the coupon with the given ID.
 //
 // see https://stripe.com/docs/api#delete_coupon
-func (self *CouponClient) Delete(id string) (bool, error) {
+func (c *CouponClient) Delete(id string) (bool, error) {
 	resp := DeleteResp{}
-	path := "/v1/coupons/" + url.QueryEscape(id)
+	path := "/coupons/" + url.QueryEscape(id)
 	if err := query("DELETE", path, nil, &resp); err != nil {
 		return false, err
 	}
@@ -117,14 +119,14 @@ func (self *CouponClient) Delete(id string) (bool, error) {
 // Returns a list of your coupons.
 //
 // see https://stripe.com/docs/api#list_coupons
-func (self *CouponClient) List() ([]*Coupon, error) {
-	return self.ListN(10, 0)
+func (c *CouponClient) List() ([]*Coupon, error) {
+	return c.ListN(10, 0)
 }
 
 // Returns a list of your coupons at the specified range.
 //
 // see https://stripe.com/docs/api#list_coupons
-func (self *CouponClient) ListN(count int, offset int) ([]*Coupon, error) {
+func (c *CouponClient) ListN(count int, offset int) ([]*Coupon, error) {
 	// define a wrapper function for the Coupon List, so that we can
 	// cleanly parse the JSON
 	type listCouponResp struct{ Data []*Coupon }
@@ -136,7 +138,7 @@ func (self *CouponClient) ListN(count int, offset int) ([]*Coupon, error) {
 		"offset": {strconv.Itoa(offset)},
 	}
 
-	err := query("GET", "/v1/coupons", values, &resp)
+	err := query("GET", "/coupons", values, &resp)
 	if err != nil {
 		return nil, err
 	}

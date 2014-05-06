@@ -17,7 +17,7 @@ func init() {
 var (
 	// Plan with only the required fields
 	p1 = PlanParams{
-		Id:       "plan1",
+		ID:       "plan1",
 		Name:     "plan 1",
 		Amount:   1,
 		Currency: USD,
@@ -26,7 +26,7 @@ var (
 
 	// Plan with all required + optional fields.
 	p2 = PlanParams{
-		Id:              "plan9",
+		ID:              "plan9",
 		Name:            "plan 9",
 		Amount:          9,
 		Currency:        USD,
@@ -45,13 +45,13 @@ func TestCreatePlan(t *testing.T) {
 
 	// Create the plan, and defer its deletion
 	plan, err := Plans.Create(&p1)
-	defer Plans.Delete(p1.Id)
+	defer Plans.Delete(p1.ID)
 
 	if err != nil {
-		t.Errorf("Expected Plan %s, got Error %s", p1.Id, err.Error())
+		t.Errorf("Expected Plan %s, got Error %s", p1.ID, err.Error())
 	}
-	if plan.Id != plan.Id {
-		t.Errorf("Expected Plan Id %s, got %s", p1.Id, plan.Id)
+	if plan.ID != plan.ID {
+		t.Errorf("Expected Plan ID %s, got %s", p1.ID, plan.ID)
 	}
 	if plan.Name != p1.Name {
 		t.Errorf("Expected Plan Name %v, got %v", p1.Name, plan.Name)
@@ -78,8 +78,8 @@ func TestCreatePlan(t *testing.T) {
 	_, err = Plans.Create(&p3)
 	if err == nil {
 		t.Error("Expected non-null Error when using an Invalid Currency.")
-	} else if strings.HasPrefix(err.Error(), "Invalid currency: XXX.") == false {
-		t.Errorf("Expected %s, got %s", "Invalid currency: XXX.", err.Error())
+	} else if strings.HasPrefix(err.Error(), "Invalid currency: xxx.") == false {
+		t.Errorf("Expected %s, got %s", "Invalid currency: xxx.", err.Error())
 	}
 }
 
@@ -88,15 +88,15 @@ func TestCreatePlan(t *testing.T) {
 func TestRetrievePlan(t *testing.T) {
 	// Create the plan, and defer its deletion
 	Plans.Create(&p2)
-	defer Plans.Delete(p2.Id)
+	defer Plans.Delete(p2.ID)
 
-	// Retrieve the Plan by Id
-	plan, err := Plans.Retrieve(p2.Id)
+	// Retrieve the Plan by ID
+	plan, err := Plans.Retrieve(p2.ID)
 	if err != nil {
-		t.Errorf("Expected Plan %s, got Error %s", p2.Id, err.Error())
+		t.Errorf("Expected Plan %s, got Error %s", p2.ID, err.Error())
 	}
-	if plan.Id != plan.Id {
-		t.Errorf("Expected Plan Id %s, got %s", p2.Id, plan.Id)
+	if plan.ID != plan.ID {
+		t.Errorf("Expected Plan ID %s, got %s", p2.ID, plan.ID)
 	}
 	if plan.Name != p2.Name {
 		t.Errorf("Expected Plan Name %v, got %v", p2.Name, plan.Name)
@@ -107,7 +107,7 @@ func TestRetrievePlan(t *testing.T) {
 	if plan.Currency != p2.Currency {
 		t.Errorf("Expected Plan Currency %v, got %v", p2.Currency, plan.Currency)
 	}
-	if plan.TrialPeriodDays != Int(p2.TrialPeriodDays) {
+	if plan.TrialPeriodDays != p2.TrialPeriodDays {
 		t.Errorf("Expected Plan Trial Period %v, got %v",
 			p2.TrialPeriodDays, plan.TrialPeriodDays)
 	}
@@ -118,9 +118,9 @@ func TestRetrievePlan(t *testing.T) {
 func TestUpdatePlan(t *testing.T) {
 	// Create the plan, and defer its deletion
 	Plans.Create(&p1)
-	defer Plans.Delete(p1.Id)
+	defer Plans.Delete(p1.ID)
 
-	plan, err := Plans.Update(p1.Id, "New Name")
+	plan, err := Plans.Update(p1.ID, "New Name")
 	if err != nil {
 		t.Errorf("Expected Plan update, got Error %s", err.Error())
 	}
@@ -136,7 +136,7 @@ func TestDeletePlan(t *testing.T) {
 	Plans.Create(&p1)
 
 	// let's try to delete the plan
-	ok, err := Plans.Delete(p1.Id)
+	ok, err := Plans.Delete(p1.ID)
 	if err != nil {
 		t.Errorf("Expected Plan deletion, got Error %s", err.Error())
 	}
@@ -153,8 +153,8 @@ func TestListPlan(t *testing.T) {
 	// create 2 dummy plans that we can retrieve
 	Plans.Create(&p1)
 	Plans.Create(&p2)
-	defer Plans.Delete(p1.Id)
-	defer Plans.Delete(p2.Id)
+	defer Plans.Delete(p1.ID)
+	defer Plans.Delete(p2.ID)
 
 	// get the list from Stripe
 	plans, err := Plans.List()
@@ -162,7 +162,7 @@ func TestListPlan(t *testing.T) {
 		t.Errorf("Expected Plan List, got Error %s", err.Error())
 	}
 
-	// since we added 2 dummy plans, we expect the array to be a size of 2 
+	// since we added 2 dummy plans, we expect the array to be a size of 2
 	if len(plans) != 2 {
 		t.Errorf("Expected 2 Plans, got %s", len(plans))
 	}

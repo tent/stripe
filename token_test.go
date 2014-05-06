@@ -49,7 +49,7 @@ func TestCreateToken(t *testing.T) {
 		t.Errorf("Expected Token Card not nil")
 		return
 	}
-	if string(resp.Card.Name) != token1.Card.Name {
+	if resp.Card.Name != token1.Card.Name {
 		t.Errorf("Expected Token Card Name %s, got %s", token1.Card.Name, resp.Card.Name)
 	}
 	if resp.Card.ExpMonth != token1.Card.ExpMonth {
@@ -73,9 +73,9 @@ func TestRetrieveToken(t *testing.T) {
 	}
 
 	// Retrieve the Token from the database
-	_, err = Tokens.Retrieve(resp.Id)
+	_, err = Tokens.Retrieve(resp.ID)
 	if err != nil {
-		t.Errorf("Expected to retrieve Token by Id, got Error %s", err.Error())
+		t.Errorf("Expected to retrieve Token by ID, got Error %s", err.Error())
 		return
 	}
 }

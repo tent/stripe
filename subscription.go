@@ -18,18 +18,18 @@ const (
 //
 // see https://stripe.com/docs/api#subscription_object
 type Subscription struct {
-	Customer           string `json:"customer"`
-	Status             string `json:"status"`
-	Plan               *Plan  `json:"plan"`
-	Start              int64  `json:"start"`
-	EndedAt            Int64  `json:"ended_at"`
-	CurrentPeriodStart Int64  `json:"current_period_start"`
-	CurrentPeriodEnd   Int64  `json:"current_period_end"`
-	TrialStart         Int64  `json:"trial_start"`
-	TrialEnd           Int64  `json:"trial_end"`
-	CanceledAt         Int64  `json:"canceled_at"`
-	CancelAtPeriodEnd  bool   `json:"cancel_at_period_end"`
-	Quantity           int64  `json"quantity"`
+	Customer           string
+	Status             string
+	Plan               *Plan
+	Start              UnixTime `json:"start"`
+	EndedAt            UnixTime `json:"ended_at"`
+	CurrentPeriodStart UnixTime `json:"current_period_start"`
+	CurrentPeriodEnd   UnixTime `json:"current_period_end"`
+	TrialStart         UnixTime `json:"trial_start"`
+	TrialEnd           UnixTime `json:"trial_end"`
+	CanceledAt         UnixTime `json:"canceled_at"`
+	CancelAtPeriodEnd  bool     `json:"cancel_at_period_end"`
+	Quantity           int
 }
 
 // SubscriptionClient encapsulates operations for updating and canceling
@@ -54,7 +54,7 @@ type SubscriptionParams struct {
 	// the customer will get before being charged for the first time. If set,
 	// trial_end will override the default trial period of the plan the customer
 	// is being subscribed to.
-	TrialEnd int64
+	TrialEnd *UnixTime
 
 	// (Optional) A new card to attach to the customer.
 	Card *CardParams
@@ -63,13 +63,13 @@ type SubscriptionParams struct {
 	Token string
 
 	// (Optional) The quantity you'd like to apply to the subscription you're creating.
-	Quantity int64
+	Quantity int
 }
 
 // Subscribes a customer to a new plan.
 //
 // see https://stripe.com/docs/api#update_subscription
-func (self *SubscriptionClient) Update(customerId string, params *SubscriptionParams) (*Subscription, error) {
+func (c *SubscriptionClient) Update(customerID string, params *SubscriptionParams) (*Subscription, error) {
 	values := url.Values{"plan": {params.Plan}}
 
 	// set optional parameters
@@ -79,21 +79,21 @@ func (self *SubscriptionClient) Update(customerId string, params *SubscriptionPa
 	if params.Prorate {
 		values.Add("prorate", "true")
 	}
-	if params.TrialEnd != 0 {
-		values.Add("trial_end", strconv.FormatInt(params.TrialEnd, 10))
+	if params.TrialEnd != nil {
+		values.Add("trial_end", strconv.FormatInt(params.TrialEnd.Unix(), 10))
 	}
 	if params.Quantity != 0 {
-		values.Add("quantity", strconv.FormatInt(params.Quantity, 10))
+		values.Add("quantity", strconv.Itoa(params.Quantity))
 	}
 	// attach a new card, if requested
 	if len(params.Token) != 0 {
 		values.Add("card", params.Token)
 	} else if params.Card != nil {
-		appendCardParamsToValues(params.Card, &values)
+		appendCardParams(values, params.Card)
 	}
 
 	s := Subscription{}
-	path := "/v1/customers/" + url.QueryEscape(customerId) + "/subscription"
+	path := "/customers/" + url.QueryEscape(customerID) + "/subscription"
 	err := query("POST", path, values, &s)
 	return &s, err
 }
@@ -102,22 +102,22 @@ func (self *SubscriptionClient) Update(customerId string, params *SubscriptionPa
 // subscription immediately.
 //
 // see https://stripe.com/docs/api#cancel_subscription
-func (self *SubscriptionClient) Cancel(customerId string) (*Subscription, error) {
+func (c *SubscriptionClient) Cancel(customerID string) (*Subscription, error) {
 	s := Subscription{}
-	path := "/v1/customers/" + url.QueryEscape(customerId) + "/subscription"
+	path := "/customers/" + url.QueryEscape(customerID) + "/subscription"
 	err := query("DELETE", path, nil, &s)
 	return &s, err
 }
 
 // Cancels the customer's subscription at the end of the billing period.
-// 
+//
 // see https://stripe.com/docs/api#cancel_subscription
-func (self *SubscriptionClient) CancelAtPeriodEnd(customerId string) (*Subscription, error) {
+func (c *SubscriptionClient) CancelAtPeriodEnd(customerID string) (*Subscription, error) {
 	values := url.Values{}
 	values.Add("at_period_end", "true")
-	
+
 	s := Subscription{}
-	path := "/v1/customers/" + url.QueryEscape(customerId) + "/subscription"
+	path := "/customers/" + url.QueryEscape(customerID) + "/subscription"
 	err := query("DELETE", path, values, &s)
 	return &s, err
 }

@@ -21,37 +21,36 @@ const (
 //
 // see https://stripe.com/docs/api#charge_object
 type Charge struct {
-	Id             string        `json:"id"`
-	Desc           String        `json:"description"`
-	Amount         int64         `json:"amount"`
-	Card           *Card         `json:"card"`
-	Currency       string        `json:"currency"`
-	Created        int64         `json:"created"`
-	Customer       String        `json:"customer"`
-	Invoice        String        `json:"invoice"`
-	Fee            int64         `json:"fee"`
-	Paid           bool          `json:"paid"`
-	Details        []*FeeDetails `json:"fee_details"`
-	Refunded       bool          `json:"refunded"`
-	AmountRefunded Int64         `json:"amount_refunded"`
-	FailureMessage String        `json:"failure_message"`
-	Disputed       bool          `json:"disputed"`
-	Livemode       bool          `json:"livemode"`
+	ID             string
+	Description    string
+	Amount         int
+	Card           *Card
+	Currency       string
+	Created        UnixTime
+	Customer       string
+	Invoice        string
+	Paid           bool
+	Refunded       bool
+	AmountRefunded int    `json:"amount_refunded"`
+	FailureMessage string `json:"failure_message"`
+	Disputed       bool
+	Livemode       bool
 }
 
 // FeeDetails represents a single fee associated with a Charge.
 type FeeDetails struct {
-	Amount      int64  `json:"amount"`
-	Currency    string `json:"currency"`
-	Type        string `json:"type"`
-	Application String `json:"application"`
+	Amount      int
+	Currency    string
+	Type        string
+	Description string
+	Application string
 }
 
 // ChargeParams encapsulates options for creating a new Charge.
 type ChargeParams struct {
 	// A positive integer in cents representing how much to charge the card.
 	// The minimum amount is 50 cents.
-	Amount int64
+	Amount int
 
 	// 3-letter ISO code for currency. Currently, only 'usd' is supported.
 	Currency string
@@ -69,7 +68,7 @@ type ChargeParams struct {
 	// An arbitrary string which you can attach to a charge object. It is
 	// displayed when in the web interface alongside the charge. It's often a
 	// good idea to use an email address as a description for tracking later.
-	Desc string
+	Description string
 }
 
 // ChargeClient encapsulates operations for creating, updating, deleting and
@@ -79,17 +78,17 @@ type ChargeClient struct{}
 // Creates a new credit card Charge.
 //
 // see https://stripe.com/docs/api#create_charge
-func (self *ChargeClient) Create(params *ChargeParams) (*Charge, error) {
+func (c *ChargeClient) Create(params *ChargeParams) (*Charge, error) {
 	charge := Charge{}
 	values := url.Values{
-		"amount":      {strconv.FormatInt(params.Amount, 10)},
+		"amount":      {strconv.Itoa(params.Amount)},
 		"currency":    {params.Currency},
-		"description": {params.Desc},
+		"description": {params.Description},
 	}
 
 	// add optional credit card details, if specified
 	if params.Card != nil {
-		appendCardParamsToValues(params.Card, &values)
+		appendCardParams(values, params.Card)
 	} else if len(params.Token) > 0 {
 		values.Add("card", params.Token)
 	} else {
@@ -97,16 +96,16 @@ func (self *ChargeClient) Create(params *ChargeParams) (*Charge, error) {
 		values.Add("customer", params.Customer)
 	}
 
-	err := query("POST", "/v1/charges", values, &charge)
+	err := query("POST", "/charges", values, &charge)
 	return &charge, err
 }
 
 // Retrieves the details of a charge with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_charge
-func (self *ChargeClient) Retrieve(id string) (*Charge, error) {
+func (c *ChargeClient) Retrieve(id string) (*Charge, error) {
 	charge := Charge{}
-	path := "/v1/charges/" + url.QueryEscape(id)
+	path := "/charges/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &charge)
 	return &charge, err
 }
@@ -114,10 +113,10 @@ func (self *ChargeClient) Retrieve(id string) (*Charge, error) {
 // Refunds a charge for the full amount.
 //
 // see https://stripe.com/docs/api#refund_charge
-func (self *ChargeClient) Refund(id string) (*Charge, error) {
+func (c *ChargeClient) Refund(id string) (*Charge, error) {
 	values := url.Values{}
 	charge := Charge{}
-	path := "/v1/charges/" + url.QueryEscape(id) + "/refund"
+	path := "/charges/" + url.QueryEscape(id) + "/refund"
 	err := query("POST", path, values, &charge)
 	return &charge, err
 }
@@ -125,12 +124,12 @@ func (self *ChargeClient) Refund(id string) (*Charge, error) {
 // Refunds a charge for the specified amount.
 //
 // see https://stripe.com/docs/api#refund_charge
-func (self *ChargeClient) RefundAmount(id string, amt int64) (*Charge, error) {
+func (c *ChargeClient) RefundAmount(id string, amt int) (*Charge, error) {
 	values := url.Values{
-		"amount": {strconv.FormatInt(amt, 10)},
+		"amount": {strconv.Itoa(amt)},
 	}
 	charge := Charge{}
-	path := "/v1/charges/" + url.QueryEscape(id) + "/refund"
+	path := "/charges/" + url.QueryEscape(id) + "/refund"
 	err := query("POST", path, values, &charge)
 	return &charge, err
 }
@@ -138,32 +137,32 @@ func (self *ChargeClient) RefundAmount(id string, amt int64) (*Charge, error) {
 // Returns a list of your Charges.
 //
 // see https://stripe.com/docs/api#list_charges
-func (self *ChargeClient) List() ([]*Charge, error) {
-	return self.list("", 10, 0)
+func (c *ChargeClient) List() ([]*Charge, error) {
+	return c.list("", 10, 0)
 }
 
 // Returns a list of your Charges with the specified range.
 //
 // see https://stripe.com/docs/api#list_charges
-func (self *ChargeClient) ListN(count int, offset int) ([]*Charge, error) {
-	return self.list("", count, offset)
+func (c *ChargeClient) ListN(count int, offset int) ([]*Charge, error) {
+	return c.list("", count, offset)
 }
 
 // Returns a list of your Charges with the given Customer ID.
 //
 // see https://stripe.com/docs/api#list_charges
-func (self *ChargeClient) CustomerList(id string) ([]*Charge, error) {
-	return self.list(id, 10, 0)
+func (c *ChargeClient) CustomerList(id string) ([]*Charge, error) {
+	return c.list(id, 10, 0)
 }
 
 // Returns a list of your Charges with the given Customer ID and range.
 //
 // see https://stripe.com/docs/api#list_charges
-func (self *ChargeClient) CustomerListN(id string, count int, offset int) ([]*Charge, error) {
-	return self.list(id, count, offset)
+func (c *ChargeClient) CustomerListN(id string, count int, offset int) ([]*Charge, error) {
+	return c.list(id, count, offset)
 }
 
-func (self *ChargeClient) list(id string, count int, offset int) ([]*Charge, error) {
+func (c *ChargeClient) list(id string, count int, offset int) ([]*Charge, error) {
 	// define a wrapper function for the Charge List, so that we can
 	// cleanly parse the JSON
 	type listChargesResp struct{ Data []*Charge }
@@ -180,7 +179,7 @@ func (self *ChargeClient) list(id string, count int, offset int) ([]*Charge, err
 		values.Add("customer", id)
 	}
 
-	err := query("GET", "/v1/charges", values, &resp)
+	err := query("GET", "/charges", values, &resp)
 	if err != nil {
 		return nil, err
 	}

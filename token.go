@@ -9,13 +9,13 @@ import (
 //
 // see https://stripe.com/docs/api#token_object
 type Token struct {
-	Id       string `json:"id"`
-	Amount   int64  `json:"amount"`
-	Currency string `json:"currency"`
-	Card     *Card  `json:"card"`
-	Created  int64  `json:"created"`
-	Used     bool   `json:"used"`
-	Livemode bool   `json:"livemode"`
+	ID       string
+	Amount   int
+	Currency string
+	Card     *Card
+	Created  UnixTime
+	Used     bool
+	Livemode bool
 }
 
 // TokenClient encapsulates operations for creating and querying tokens using
@@ -25,7 +25,7 @@ type TokenClient struct{}
 // TokenParams encapsulates options for creating a new Card Token.
 type TokenParams struct {
 	//Currency string REMOVED! no longer part of the API
-	Card     *CardParams
+	Card *CardParams
 }
 
 // Creates a single use token that wraps the details of a credit card.
@@ -34,21 +34,21 @@ type TokenParams struct {
 // attaching them to a customer.
 //
 // see https://stripe.com/docs/api#create_token
-func (self *TokenClient) Create(params *TokenParams) (*Token, error) {
-	token := Token{}
-	values := url.Values{} // REMOVED "currency": {params.Currency}}
-	appendCardParamsToValues(params.Card, &values)
+func (c *TokenClient) Create(params *TokenParams) (*Token, error) {
+	token := &Token{}
+	values := make(url.Values) // REMOVED "currency": {params.Currency}}
+	appendCardParams(values, params.Card)
 
-	err := query("POST", "/v1/tokens", values, &token)
-	return &token, err
+	err := query("POST", "/tokens", values, token)
+	return token, err
 }
 
-// Retrieves the card token with the given Id.
+// Retrieves the card token with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_token
-func (self *TokenClient) Retrieve(id string) (*Token, error) {
+func (c *TokenClient) Retrieve(id string) (*Token, error) {
 	token := Token{}
-	path := "/v1/tokens/" + url.QueryEscape(id)
+	path := "/tokens/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &token)
 	return &token, err
 }

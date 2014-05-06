@@ -18,9 +18,9 @@ var (
 
 	// Charge with only the required fields
 	charge1 = ChargeParams{
-		Desc:     "Calzone",
-		Amount:   400,
-		Currency: USD,
+		Description: "Calzone",
+		Amount:      400,
+		Currency:    USD,
 		Card: &CardParams{
 			Name:     "George Costanza",
 			Number:   "4242424242424242",
@@ -41,8 +41,8 @@ func TestCreateCharge(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected Successful Charge, got Error %s", err.Error())
 	}
-	if string(resp.Desc) != charge1.Desc {
-		t.Errorf("Expected Charge Desc %s, got %s", charge1.Desc, resp.Desc)
+	if resp.Description != charge1.Description {
+		t.Errorf("Expected Charge Desc %s, got %s", charge1.Description, resp.Description)
 	}
 	if resp.Amount != charge1.Amount {
 		t.Errorf("Expected Charge Amount %v, got %v", charge1.Amount, resp.Amount)
@@ -67,10 +67,10 @@ func TestCreateChargeToken(t *testing.T) {
 
 	// Create a Charge that uses a Token
 	charge := ChargeParams{
-		Desc:     "Calzone",
-		Amount:   400,
-		Currency: USD,
-		Token:    token.Id,
+		Description: "Calzone",
+		Amount:      400,
+		Currency:    USD,
+		Token:       token.ID,
 	}
 
 	// Create the charge
@@ -87,18 +87,18 @@ func TestCreateChargeCustomer(t *testing.T) {
 	// Create a Customer and defer deletion
 	// This customer should have a credit card setup
 	cust, _ := Customers.Create(&cust4)
-	defer Customers.Delete(cust.Id)
-	if cust.Card == nil {
+	defer Customers.Delete(cust.ID)
+	if cust.DefaultCard == "" {
 		t.Errorf("Cannot test charging a customer with no pre-defined Card")
 		return
 	}
 
 	// Create a Charge that uses a Token
 	charge := ChargeParams{
-		Desc:     "Calzone",
-		Amount:   400,
-		Currency: USD,
-		Customer: cust.Id,
+		Description: "Calzone",
+		Amount:      400,
+		Currency:    USD,
+		Customer:    cust.ID,
 	}
 
 	// Create the charge
@@ -117,9 +117,9 @@ func TestRetrieveCharge(t *testing.T) {
 	}
 
 	// Retrieve the charge from the database
-	_, err = Charges.Retrieve(resp.Id)
+	_, err = Charges.Retrieve(resp.ID)
 	if err != nil {
-		t.Errorf("Expected to retrieve Charge by Id, got Error %s", err.Error())
+		t.Errorf("Expected to retrieve Charge by ID, got Error %s", err.Error())
 		return
 	}
 }
@@ -133,7 +133,7 @@ func TestRefundCharge(t *testing.T) {
 	}
 
 	// Refund the full amount
-	charge, err := Charges.Refund(resp.Id)
+	charge, err := Charges.Refund(resp.ID)
 	if err != nil {
 		t.Errorf("Expected Refund, got Error %s", err.Error())
 		return
@@ -142,8 +142,8 @@ func TestRefundCharge(t *testing.T) {
 	if charge.Refunded == false {
 		t.Errorf("Expected Refund, however Refund flag was set to false")
 	}
-	if int64(charge.AmountRefunded) != charge1.Amount {
-		t.Errorf("Expected AmountRefunded %v, but got %v", charge1.Amount, int64(charge.AmountRefunded))
+	if charge.AmountRefunded != charge1.Amount {
+		t.Errorf("Expected AmountRefunded %v, but got %v", charge1.Amount, charge.AmountRefunded)
 		return
 	}
 }

@@ -10,14 +10,14 @@ import (
 //
 // see https://stripe.com/docs/api#invoiceitem_object
 type InvoiceItem struct {
-	Id       string `json:"id"`
-	Amount   int64  `json:"amount"`
-	Currency string `json:"currency"`
-	Customer string `json:"customer"`
-	Date     int64  `json:"date"`
-	Desc     String `json:"description"`
-	Invoice  String `json:"invoice"`
-	Livemode bool   `json:"livemode"`
+	ID          string
+	Amount      int
+	Currency    string
+	Customer    string
+	Date        UnixTime
+	Description string
+	Invoice     string
+	Livemode    bool
 }
 
 // InvoiceItemParams encapsulates options for creating a new Invoice Items.
@@ -29,14 +29,14 @@ type InvoiceItemParams struct {
 	// The integer amount in cents of the charge to be applied to the upcoming
 	// invoice. If you want to apply a credit to the customer's account, pass a
 	// negative amount.
-	Amount int64
+	Amount int
 
 	// 3-letter ISO code for currency. Currently, only 'usd' is supported.
 	Currency string
 
 	// (Optional) An arbitrary string which you can attach to the invoice item.
 	// The description is displayed in the invoice for easy tracking.
-	Desc string
+	Description string
 
 	// (Optional) The ID of an existing invoice to add this invoice item to.
 	// When left blank, the invoice item will be added to the next upcoming
@@ -51,32 +51,32 @@ type InvoiceItemClient struct{}
 // Create adds an arbitrary charge or credit to the customer's upcoming invoice.
 //
 // see https://stripe.com/docs/api#invoiceitem_object
-func (self *InvoiceItemClient) Create(params *InvoiceItemParams) (*InvoiceItem, error) {
+func (c *InvoiceItemClient) Create(params *InvoiceItemParams) (*InvoiceItem, error) {
 	item := InvoiceItem{}
 	values := url.Values{
-		"amount":   {strconv.FormatInt(params.Amount, 10)},
+		"amount":   {strconv.Itoa(params.Amount)},
 		"currency": {params.Currency},
 		"customer": {params.Customer},
 	}
 
 	// add optional parameters
-	if len(params.Desc) != 0 {
-		values.Add("description", params.Desc)
+	if len(params.Description) != 0 {
+		values.Add("description", params.Description)
 	}
 	if len(params.Invoice) != 0 {
 		values.Add("invoice", params.Invoice)
 	}
 
-	err := query("POST", "/v1/invoiceitems", values, &item)
+	err := query("POST", "/invoiceitems", values, &item)
 	return &item, err
 }
 
 // Retrieves the Invoice Item with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_invoiceitem
-func (self *InvoiceItemClient) Retrieve(id string) (*InvoiceItem, error) {
+func (c *InvoiceItemClient) Retrieve(id string) (*InvoiceItem, error) {
 	item := InvoiceItem{}
-	path := "/v1/invoiceitems/" + url.QueryEscape(id)
+	path := "/invoiceitems/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &item)
 	return &item, err
 }
@@ -85,27 +85,27 @@ func (self *InvoiceItemClient) Retrieve(id string) (*InvoiceItem, error) {
 // invoice, using the given Invoice Item ID.
 //
 // see https://stripe.com/docs/api#update_invoiceitem
-func (self *InvoiceItemClient) Update(id string, params *InvoiceItemParams) (*InvoiceItem, error) {
+func (c *InvoiceItemClient) Update(id string, params *InvoiceItemParams) (*InvoiceItem, error) {
 	item := InvoiceItem{}
 	values := url.Values{}
 
-	if len(params.Desc) != 0 {
-		values.Add("description", params.Desc)
+	if len(params.Description) != 0 {
+		values.Add("description", params.Description)
 	}
 	if params.Amount != 0 {
-		values.Add("invoice", strconv.FormatInt(params.Amount, 10))
+		values.Add("invoice", strconv.Itoa(params.Amount))
 	}
 
-	err := query("POST", "/v1/invoiceitems/"+url.QueryEscape(id), values, &item)
+	err := query("POST", "/invoiceitems/"+url.QueryEscape(id), values, &item)
 	return &item, err
 }
 
 // Removes an Invoice Item with the given ID.
-// 
+//
 // see https://stripe.com/docs/api#delete_invoiceitem
-func (self *InvoiceItemClient) Delete(id string) (bool, error) {
+func (c *InvoiceItemClient) Delete(id string) (bool, error) {
 	resp := DeleteResp{}
-	path := "/v1/invoiceitems/" + url.QueryEscape(id)
+	path := "/invoiceitems/" + url.QueryEscape(id)
 	if err := query("DELETE", path, nil, &resp); err != nil {
 		return false, err
 	}
@@ -115,33 +115,33 @@ func (self *InvoiceItemClient) Delete(id string) (bool, error) {
 // Returns a list of Invoice Items.
 //
 // see https://stripe.com/docs/api#list_invoiceitems
-func (self *InvoiceItemClient) List() ([]*InvoiceItem, error) {
-	return self.list("", 10, 0)
+func (c *InvoiceItemClient) List() ([]*InvoiceItem, error) {
+	return c.list("", 10, 0)
 }
 
 // Returns a list of Invoice Items at the specified range.
 //
 // see https://stripe.com/docs/api#list_invoiceitems
-func (self *InvoiceItemClient) ListN(count int, offset int) ([]*InvoiceItem, error) {
-	return self.list("", count, offset)
+func (c *InvoiceItemClient) ListN(count int, offset int) ([]*InvoiceItem, error) {
+	return c.list("", count, offset)
 }
 
 // Returns a list of Invoice Items for the specified Customer ID.
 //
 // see https://stripe.com/docs/api#list_invoiceitems
-func (self *InvoiceItemClient) CustomerList(id string) ([]*InvoiceItem, error) {
-	return self.list(id, 10, 0)
+func (c *InvoiceItemClient) CustomerList(id string) ([]*InvoiceItem, error) {
+	return c.list(id, 10, 0)
 }
 
 // Returns a list of Invoice Items for the specified Customer ID, at the
 // specified range.
 //
 // see https://stripe.com/docs/api#list_invoiceitems
-func (self *InvoiceItemClient) CustomerListN(id string, count int, offset int) ([]*InvoiceItem, error) {
-	return self.list(id, count, offset)
+func (c *InvoiceItemClient) CustomerListN(id string, count int, offset int) ([]*InvoiceItem, error) {
+	return c.list(id, count, offset)
 }
 
-func (self *InvoiceItemClient) list(id string, count int, offset int) ([]*InvoiceItem, error) {
+func (c *InvoiceItemClient) list(id string, count int, offset int) ([]*InvoiceItem, error) {
 	// define a wrapper function for the Invoice Items List, so that we can
 	// cleanly parse the JSON
 	type listInvoiceItemsResp struct{ Data []*InvoiceItem }
@@ -158,7 +158,7 @@ func (self *InvoiceItemClient) list(id string, count int, offset int) ([]*Invoic
 		values.Add("customer", id)
 	}
 
-	err := query("GET", "/v1/invoiceitems", values, &resp)
+	err := query("GET", "/invoiceitems", values, &resp)
 	if err != nil {
 		return nil, err
 	}

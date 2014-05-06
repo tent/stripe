@@ -17,13 +17,13 @@ const (
 //
 // see https://stripe.com/docs/api#plan_object
 type Plan struct {
-	Id              string `json:"id"`
-	Name            string `json:"name"`
-	Amount          int64  `json:"amount"`
-	Interval        string `json:"interval"`
-	Currency        string `json:"currency"`
-	TrialPeriodDays Int    `json:"trial_period_days"`
-	Livemode        bool   `json:"livemode"`
+	ID              string
+	Name            string
+	Amount          int
+	Interval        string
+	Currency        string
+	TrialPeriodDays int `json:"trial_period_days"`
+	Livemode        bool
 }
 
 // PlanClient encapsulates operations for creating, updating, deleting and
@@ -34,11 +34,11 @@ type PlanClient struct{}
 type PlanParams struct {
 	// Unique string of your choice that will be used to identify this plan
 	// when subscribing a customer.
-	Id string
+	ID string
 
 	// A positive integer in cents (or 0 for a free plan) representing how much
 	// to charge (on a recurring basis)
-	Amount int64
+	Amount int
 
 	// 3-letter ISO code for currency. Currently, only 'usd' is supported.
 	Currency string
@@ -59,12 +59,12 @@ type PlanParams struct {
 // Creates a new Plan.
 //
 // see https://stripe.com/docs/api#create_plan
-func (self *PlanClient) Create(params *PlanParams) (*Plan, error) {
+func (c *PlanClient) Create(params *PlanParams) (*Plan, error) {
 	plan := Plan{}
 	values := url.Values{
-		"id":       {params.Id},
+		"id":       {params.ID},
 		"name":     {params.Name},
-		"amount":   {strconv.FormatInt(params.Amount, 10)},
+		"amount":   {strconv.Itoa(params.Amount)},
 		"interval": {params.Interval},
 		"currency": {params.Currency},
 	}
@@ -74,16 +74,16 @@ func (self *PlanClient) Create(params *PlanParams) (*Plan, error) {
 		values.Add("trial_period_days", strconv.Itoa(params.TrialPeriodDays))
 	}
 
-	err := query("POST", "/v1/plans", values, &plan)
+	err := query("POST", "/plans", values, &plan)
 	return &plan, err
 }
 
 // Retrieves the plan with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_plan
-func (self *PlanClient) Retrieve(id string) (*Plan, error) {
+func (c *PlanClient) Retrieve(id string) (*Plan, error) {
 	plan := Plan{}
-	path := "/v1/plans/" + url.QueryEscape(id)
+	path := "/plans/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &plan)
 	return &plan, err
 }
@@ -92,10 +92,10 @@ func (self *PlanClient) Retrieve(id string) (*Plan, error) {
 // by design, not editable.
 //
 // see https://stripe.com/docs/api#update_plan
-func (self *PlanClient) Update(id string, newName string) (*Plan, error) {
+func (c *PlanClient) Update(id string, newName string) (*Plan, error) {
 	values := url.Values{"name": {newName}}
 	plan := Plan{}
-	path := "/v1/plans/" + url.QueryEscape(id)
+	path := "/plans/" + url.QueryEscape(id)
 	err := query("POST", path, values, &plan)
 	return &plan, err
 }
@@ -103,9 +103,9 @@ func (self *PlanClient) Update(id string, newName string) (*Plan, error) {
 // Deletes a plan with the given ID.
 //
 // see https://stripe.com/docs/api#delete_plan
-func (self *PlanClient) Delete(id string) (bool, error) {
+func (c *PlanClient) Delete(id string) (bool, error) {
 	resp := DeleteResp{}
-	path := "/v1/plans/" + url.QueryEscape(id)
+	path := "/plans/" + url.QueryEscape(id)
 	if err := query("DELETE", path, nil, &resp); err != nil {
 		return false, err
 	}
@@ -115,14 +115,14 @@ func (self *PlanClient) Delete(id string) (bool, error) {
 // Returns a list of your Plans.
 //
 // see https://stripe.com/docs/api#list_Plans
-func (self *PlanClient) List() ([]*Plan, error) {
-	return self.ListN(10, 0)
+func (c *PlanClient) List() ([]*Plan, error) {
+	return c.ListN(10, 0)
 }
 
 // Returns a list of your Plans at the specified range.
 //
 // see https://stripe.com/docs/api#list_Plans
-func (self *PlanClient) ListN(count int, offset int) ([]*Plan, error) {
+func (c *PlanClient) ListN(count int, offset int) ([]*Plan, error) {
 	// define a wrapper function for the Plan List, so that we can
 	// cleanly parse the JSON
 	type listPlanResp struct{ Data []*Plan }
@@ -134,7 +134,7 @@ func (self *PlanClient) ListN(count int, offset int) ([]*Plan, error) {
 		"offset": {strconv.Itoa(offset)},
 	}
 
-	err := query("GET", "/v1/plans", values, &resp)
+	err := query("GET", "/plans", values, &resp)
 	if err != nil {
 		return nil, err
 	}

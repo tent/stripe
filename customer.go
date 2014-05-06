@@ -9,16 +9,34 @@ import (
 //
 // see https://stripe.com/docs/api#customer_object
 type Customer struct {
-	Id           string        `json:"id"`
-	Desc         String        `json:"description,omitempty"`
-	Email        String        `json:"email,omitempty"`
-	Created      int64         `json:"created"`
-	Balance      int64         `json:"account_balance"`
-	Delinquent   bool          `json:"delinquent"`
-	Card         *Card         `json:"active_card,omitempty"`
-	Discount     *Discount     `json:"discount,omitempty"`
-	Subscription *Subscription `json:"subscription,omitempty"`
-	Livemode     bool          `json:"livemode"`
+	ID            string
+	Description   string
+	Email         string
+	Created       UnixTime
+	Balance       int `json:"account_balance"`
+	Currency      string
+	Delinquent    bool
+	Cards         *CardList
+	Discount      *Discount
+	Subscriptions *SubscriptionList
+	Livemode      bool
+	DefaultCard   string `json:"default_card"`
+	Metadata      map[string]string
+}
+
+type ListObject struct {
+	Count int  `json:"total_count"`
+	More  bool `json:"has_more"`
+}
+
+type SubscriptionList struct {
+	ListObject
+	Data []*Subscription
+}
+
+type CardList struct {
+	ListObject
+	Data []*Card
 }
 
 // Discount represents the actual application of a coupon to a particular
@@ -26,11 +44,11 @@ type Customer struct {
 //
 // see https://stripe.com/docs/api#discount_object
 type Discount struct {
-	Id       string  `json:"id"`
-	Customer string  `json:"customer"`
-	Start    Int64   `json:"start"`
-	End      Int64   `json:"end"`
-	Coupon   *Coupon `json:"coupon"`
+	Customer     string
+	Start        UnixTime
+	End          UnixTime
+	Coupon       *Coupon
+	Subscription string
 }
 
 // CustomerParams encapsulates options for creating and updating Customers.
@@ -39,7 +57,7 @@ type CustomerParams struct {
 	Email string
 
 	// (Optional) An arbitrary string which you can attach to a customer object.
-	Desc string
+	Description string
 
 	// (Optional) Customer's Active Credit Card
 	Card *CardParams
@@ -56,12 +74,21 @@ type CustomerParams struct {
 	// describing the state of the customer's subscription.
 	Plan string
 
-	// (Optional) UTC integer timestamp representing the end of the trial period
+	// (Optional) The quantity you’d like to apply to the subscription you’re creating.
+	Quantity int
+
+	// (Optional) timestamp representing the end of the trial period
 	// the customer will get before being charged for the first time.
-	TrialEnd int64
+	TrialEnd *UnixTime
 
 	// (Optional) Customer's account balance. Negative is credit, positive is added to the next invoice.
-	Balance *int64
+	Balance *int
+
+	// (Optional) Customer's default card id.
+	DefaultCard string
+
+	// (Optional) Metadata.
+	Metadata map[string]string
 }
 
 // CustomerClient encapsulates operations for creating, updating, deleting and
@@ -71,21 +98,21 @@ type CustomerClient struct{}
 // Creates a new Customer.
 //
 // see https://stripe.com/docs/api#create_customer
-func (self *CustomerClient) Create(c *CustomerParams) (*Customer, error) {
+func (c *CustomerClient) Create(cust *CustomerParams) (*Customer, error) {
 	customer := Customer{}
-	values := url.Values{}
-	appendCustomerParamsToValues(c, &values)
+	params := make(url.Values)
+	appendCustomerParams(params, cust)
 
-	err := query("POST", "/v1/customers", values, &customer)
+	err := query("POST", "/customers", params, &customer)
 	return &customer, err
 }
 
 // Retrieves a Customer with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_customer
-func (self *CustomerClient) Retrieve(id string) (*Customer, error) {
+func (c *CustomerClient) Retrieve(id string) (*Customer, error) {
 	customer := Customer{}
-	path := "/v1/customers/" + url.QueryEscape(id)
+	path := "/customers/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &customer)
 	return &customer, err
 }
@@ -93,21 +120,21 @@ func (self *CustomerClient) Retrieve(id string) (*Customer, error) {
 // Updates a Customer with the given ID.
 //
 // see https://stripe.com/docs/api#update_customer
-func (self *CustomerClient) Update(id string, c *CustomerParams) (*Customer, error) {
+func (c *CustomerClient) Update(id string, cust *CustomerParams) (*Customer, error) {
 	customer := Customer{}
-	values := url.Values{}
-	appendCustomerParamsToValues(c, &values)
+	params := make(url.Values)
+	appendCustomerParams(params, cust)
 
-	err := query("POST", "/v1/customers/"+url.QueryEscape(id), values, &customer)
+	err := query("POST", "/customers/"+url.QueryEscape(id), params, &customer)
 	return &customer, err
 }
 
 // Deletes a Customer (permanently) with the given ID.
 //
 // see https://stripe.com/docs/api#delete_customer
-func (self *CustomerClient) Delete(id string) (bool, error) {
+func (c *CustomerClient) Delete(id string) (bool, error) {
 	resp := DeleteResp{}
-	path := "/v1/customers/" + url.QueryEscape(id)
+	path := "/customers/" + url.QueryEscape(id)
 	if err := query("DELETE", path, nil, &resp); err != nil {
 		return false, err
 	}
@@ -117,14 +144,14 @@ func (self *CustomerClient) Delete(id string) (bool, error) {
 // Returns a list of your Customers.
 //
 // see https://stripe.com/docs/api#list_customers
-func (self *CustomerClient) List() ([]*Customer, error) {
-	return self.ListN(10, 0)
+func (c *CustomerClient) List() ([]*Customer, error) {
+	return c.ListN(10, 0)
 }
 
 // Returns a list of your Customers at the specified range.
 //
 // see https://stripe.com/docs/api#list_customers
-func (self *CustomerClient) ListN(count int, offset int) ([]*Customer, error) {
+func (c *CustomerClient) ListN(count int, offset int) ([]*Customer, error) {
 	// define a wrapper function for the Customer List, so that we can
 	// cleanly parse the JSON
 	type listCustomerResp struct{ Data []*Customer }
@@ -136,7 +163,7 @@ func (self *CustomerClient) ListN(count int, offset int) ([]*Customer, error) {
 		"offset": {strconv.Itoa(offset)},
 	}
 
-	err := query("GET", "/v1/customers", values, &resp)
+	err := query("GET", "/customers", values, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -146,13 +173,13 @@ func (self *CustomerClient) ListN(count int, offset int) ([]*Customer, error) {
 ////////////////////////////////////////////////////////////////////////////////
 // Helper Function(s)
 
-func appendCustomerParamsToValues(c *CustomerParams, values *url.Values) {
+func appendCustomerParams(values url.Values, c *CustomerParams) {
 	// add optional parameters, if specified
 	if c.Email != "" {
 		values.Add("email", c.Email)
 	}
-	if c.Desc != "" {
-		values.Add("description", c.Desc)
+	if c.Description != "" {
+		values.Add("description", c.Description)
 	}
 	if c.Coupon != "" {
 		values.Add("coupon", c.Coupon)
@@ -160,25 +187,35 @@ func appendCustomerParamsToValues(c *CustomerParams, values *url.Values) {
 	if c.Plan != "" {
 		values.Add("plan", c.Plan)
 	}
-	if c.TrialEnd != 0 {
-		values.Add("trial_end", strconv.FormatInt(c.TrialEnd, 10))
+	if c.TrialEnd != nil {
+		values.Add("trial_end", strconv.FormatInt(c.TrialEnd.Unix(), 10))
 	}
 	if c.Balance != nil {
-		values.Add("account_balance", strconv.FormatInt(*c.Balance, 10))
+		values.Add("account_balance", strconv.Itoa(*c.Balance))
 	}
+	if c.DefaultCard != "" {
+		values.Add("default_card", c.DefaultCard)
+	}
+	appendMetadata(values, c.Metadata)
 
 	// add optional credit card details, if specified
 	if c.Card != nil {
-		appendCardParamsToValues(c.Card, values)
-	} else if len(c.Token) != 0 {
+		appendCardParams(values, c.Card)
+	} else if c.Token != "" {
 		values.Add("card", c.Token)
 	}
 }
 
-func appendCardParamsToValues(c *CardParams, values *url.Values) {
-	values.Add("card[number]", c.Number)
-	values.Add("card[exp_month]", strconv.Itoa(c.ExpMonth))
-	values.Add("card[exp_year]", strconv.Itoa(c.ExpYear))
+func appendCardParams(values url.Values, c *CardParams) {
+	if c.Number != "" {
+		values.Add("card[number]", c.Number)
+	}
+	if c.ExpMonth != 0 {
+		values.Add("card[exp_month]", strconv.Itoa(c.ExpMonth))
+	}
+	if c.ExpMonth != 0 {
+		values.Add("card[exp_year]", strconv.Itoa(c.ExpYear))
+	}
 	if c.Name != "" {
 		values.Add("card[name]", c.Name)
 	}

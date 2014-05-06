@@ -16,14 +16,14 @@ func init() {
 var (
 	// Coupon with only the required fields
 	c1 = CouponParams{
-		Id:         "test coupon 1",
+		ID:         "test coupon 1",
 		PercentOff: 5,
 		Duration:   DurationOnce,
 	}
 
 	// Coupon with all required + optional fields.
 	c2 = CouponParams{
-		Id:               "test coupon 2",
+		ID:               "test coupon 2",
 		PercentOff:       10,
 		Duration:         DurationRepeating,
 		MaxRedemptions:   100,
@@ -40,16 +40,16 @@ func TestCreateCoupon(t *testing.T) {
 
 	// Create the coupon, and defer its deletion
 	coupon, err := Coupons.Create(&c1)
-	defer Coupons.Delete(c1.Id)
+	defer Coupons.Delete(c1.ID)
 
-	if coupon.Id != c1.Id {
-		t.Errorf("Expected Coupon Id %s, got %s", c1.Id, coupon.Id)
+	if coupon.ID != c1.ID {
+		t.Errorf("Expected Coupon ID %s, got %s", c1.ID, coupon.ID)
 	}
 	if coupon.Duration != c1.Duration {
 		t.Errorf("Expected Coupon Duration %v, got %v",
 			c1.Duration, coupon.Duration)
 	}
-	if coupon.MaxRedemptions != Int(c1.MaxRedemptions) {
+	if coupon.MaxRedemptions != c1.MaxRedemptions {
 		t.Errorf("Expected Coupon MaxRedemptions %v, got %v",
 			c1.MaxRedemptions, coupon.MaxRedemptions)
 	}
@@ -75,15 +75,15 @@ func TestCreateCoupon(t *testing.T) {
 func TestRetrieveCoupon(t *testing.T) {
 	// create a request that we can retrieve, defer deletion in case test fails
 	Coupons.Create(&c2)
-	defer Coupons.Delete(c2.Id)
+	defer Coupons.Delete(c2.ID)
 
 	// now let's retrieve the recently added coupon
-	coupon, err := Coupons.Retrieve(c2.Id)
+	coupon, err := Coupons.Retrieve(c2.ID)
 	if err != nil {
-		t.Errorf("Expected Coupon %s, got Error %s", c2.Id, err.Error())
+		t.Errorf("Expected Coupon %s, got Error %s", c2.ID, err.Error())
 	}
-	if coupon.Id != c2.Id {
-		t.Errorf("Expected Coupon Id %s, got %s", c2.Id, coupon.Id)
+	if coupon.ID != c2.ID {
+		t.Errorf("Expected Coupon ID %s, got %s", c2.ID, coupon.ID)
 	}
 	if coupon.PercentOff != c2.PercentOff {
 		t.Errorf("Expected Coupon PercentOff %v, got %v",
@@ -109,7 +109,7 @@ func TestDeleteCoupon(t *testing.T) {
 	Coupons.Create(&c1)
 
 	// let's try to delete the coupon
-	ok, err := Coupons.Delete(c1.Id)
+	ok, err := Coupons.Delete(c1.ID)
 	if err != nil {
 		t.Errorf("Expected Coupon deletion, got Error %s", err.Error())
 	}
@@ -126,8 +126,8 @@ func TestListCoupon(t *testing.T) {
 	// create 2 dummy coupons that we can retrieve
 	Coupons.Create(&c1)
 	Coupons.Create(&c2)
-	defer Coupons.Delete(c1.Id)
-	defer Coupons.Delete(c2.Id)
+	defer Coupons.Delete(c1.ID)
+	defer Coupons.Delete(c2.ID)
 
 	// get the list from Stripe
 	coupons, err := Coupons.List()
@@ -135,7 +135,7 @@ func TestListCoupon(t *testing.T) {
 		t.Errorf("Expected Coupon List, got Error %s", err.Error())
 	}
 
-	// since we added 2 dummy coupons, we expect the array to be a size of 2 
+	// since we added 2 dummy coupons, we expect the array to be a size of 2
 	if len(coupons) != 2 {
 		t.Errorf("Expected 2 Coupons, got %s", len(coupons))
 	}

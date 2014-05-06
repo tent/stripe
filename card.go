@@ -18,22 +18,23 @@ const (
 
 // Card represents details about a Credit Card entered into Stripe.
 type Card struct {
-	Id                string `json:"id"`
-	Name              String `json:"name,omitempty"`
-	Type              string `json:"type"`
-	ExpMonth          int    `json:"exp_month"`
-	ExpYear           int    `json:"exp_year"`
-	Last4             string `json:"last4"`
-	Fingerprint       string `json:"fingerprint"`
-	Country           String `json:"country,omitempty"`
-	Address1          String `json:"address_line1,omitempty"`
-	Address2          String `json:"address_line2,omitempty"`
-	AddressCountry    String `json:"address_country,omitempty"`
-	AddressState      String `json:"address_state,omitempty"`
-	AddressZip        String `json:"address_zip,omitempty"`
-	AddressLine1Check String `json:"address_line1_check,omitempty"`
-	AddressZipCheck   String `json:"address_zip_check,omitempty"`
-	CVCCheck          String `json:"cvc_check,omitempty"`
+	ID                string
+	Name              string
+	Type              string
+	ExpMonth          int `json:"exp_month"`
+	ExpYear           int `json:"exp_year"`
+	Last4             string
+	Fingerprint       string
+	Country           string
+	Address1          string `json:"address_line1"`
+	Address2          string `json:"address_line2"`
+	AddressCountry    string `json:"address_country"`
+	AddressState      string `json:"address_state"`
+	AddressZip        string `json:"address_zip"`
+	AddressLine1Check string `json:"address_line1_check"`
+	AddressZipCheck   string `json:"address_zip_check"`
+	CVCCheck          string `json:"cvc_check"`
+	Customer          string
 }
 
 // CardParams encapsulates options for Creating or Updating Credit Cards.
@@ -44,10 +45,10 @@ type CardParams struct {
 	// The card number, as a string without any separators.
 	Number string
 
-	// Two digit number representing the card's expiration month.
+	// The card's expiration month.
 	ExpMonth int
 
-	// Four digit number representing the card's expiration year.
+	// The card's expiration year.
 	ExpYear int
 
 	// Card security code
@@ -75,13 +76,11 @@ type CardParams struct {
 //
 // see http://en.wikipedia.org/wiki/Luhn_algorithm
 func IsLuhnValid(card string) (bool, error) {
-
 	var sum = 0
 	var digits = strings.Split(card, "")
 
 	// iterate through the digits in reverse order
 	for i, even := len(digits)-1, false; i >= 0; i, even = i-1, !even {
-
 		// convert the digit to an integer
 		digit, err := strconv.Atoi(digits[i])
 		if err != nil {
@@ -110,7 +109,6 @@ func IsLuhnValid(card string) (bool, error) {
 // Discover) based on the Credit Card Number. If the Number is not recognized, a
 // value of "Unknown" will be returned.
 func GetCardType(card string) string {
-
 	switch card[0:1] {
 	case "4":
 		return Visa

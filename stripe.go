@@ -21,7 +21,7 @@ var _key string
 // the default URL for all Stripe API requests
 var _url string = "https://api.stripe.com"
 
-const apiVersion = "2013-02-13"
+const apiVersion = "2014-03-28"
 
 // SetUrl will override the default Stripe API URL. This is primarily used
 // for unit testing.
@@ -67,7 +67,7 @@ func query(method, path string, values url.Values, v interface{}) error {
 	}
 
 	// set the endpoint for the specific API
-	endpoint.Path = path
+	endpoint.Path = "/v1" + path
 	endpoint.User = url.User(_key)
 
 	// if this is an http GET, add the url.Values to the endpoint
@@ -143,7 +143,13 @@ func (e *Error) Error() string {
 // Response to a Deletion request.
 type DeleteResp struct {
 	// ID of the Object that was deleted
-	Id string `json:"id"`
+	ID string `json:"id"`
 	// Boolean value indicating object was successfully deleted.
 	Deleted bool `json:"deleted"`
+}
+
+func appendMetadata(values url.Values, meta map[string]string) {
+	for k, v := range meta {
+		values.Add(fmt.Sprintf("metadata[%s]", k), v)
+	}
 }
