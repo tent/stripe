@@ -37,7 +37,7 @@ var (
 	}
 )
 
-func TestUpdateSubscription(t *testing.T) {
+func TestCreateSubscription(t *testing.T) {
 	// Create the customer, and defer its deletion
 	cust, _ := Customers.Create(&cust1)
 	defer Customers.Delete(cust.ID)
@@ -47,7 +47,7 @@ func TestUpdateSubscription(t *testing.T) {
 	defer Customers.Delete(p1.ID)
 
 	// Subscribe the Customer to the Plan
-	resp, err := Subscriptions.Update(cust.ID, &sub1)
+	resp, err := Subscriptions.Create(cust.ID, &sub1)
 	if err != nil {
 		t.Errorf("Expected Subscription, got error %s", err.Error())
 	}
@@ -59,7 +59,7 @@ func TestUpdateSubscription(t *testing.T) {
 	}
 }
 
-func TestUpdateSubscriptionCard(t *testing.T) {
+func TestCreateSubscriptionCard(t *testing.T) {
 	// Create the customer, and defer its deletion
 	cust, _ := Customers.Create(&cust1)
 	defer Customers.Delete(cust.ID)
@@ -77,7 +77,7 @@ func TestUpdateSubscriptionCard(t *testing.T) {
 	defer Coupons.Delete(c1.ID)
 
 	// Subscribe a Customer to a new plan, using a new Credit Card
-	resp, err := Subscriptions.Update(cust.ID, &sub2)
+	resp, err := Subscriptions.Create(cust.ID, &sub2)
 	if err != nil {
 		t.Errorf("Expected Subscription, got error %s", err.Error())
 	}
@@ -92,7 +92,7 @@ func TestUpdateSubscriptionCard(t *testing.T) {
 	}
 }
 
-func TestUpdateSubscriptionToken(t *testing.T) {
+func TestCreateSubscriptionToken(t *testing.T) {
 	// Create the customer, and defer its deletion
 	cust, _ := Customers.Create(&cust1)
 	defer Customers.Delete(cust.ID)
@@ -110,7 +110,7 @@ func TestUpdateSubscriptionToken(t *testing.T) {
 
 	// Subscribe the Customer to the Plan, using the Token
 	params := SubscriptionParams{Plan: "plan1", Token: token.ID}
-	_, err := Subscriptions.Update(cust.ID, &params)
+	_, err := Subscriptions.Create(cust.ID, &params)
 	if err != nil {
 		t.Errorf("Expected Subscription with Token, got error %s", err.Error())
 	}
@@ -132,13 +132,13 @@ func TestCancelSubscription(t *testing.T) {
 	defer Customers.Delete(p1.ID)
 
 	// Subscribe the Customer to the Plan
-	_, err := Subscriptions.Update(cust.ID, &sub1)
+	sub, err := Subscriptions.Create(cust.ID, &sub1)
 	if err != nil {
 		t.Errorf("Expected Subscription, got error %s", err.Error())
 	}
 
 	// Now cancel the subscription
-	subs, err := Subscriptions.Cancel(cust.ID)
+	subs, err := Subscriptions.Cancel(cust.ID, sub.ID, false)
 	if err != nil {
 		t.Errorf("Expected Subscription Cancellation, got error %s", err.Error())
 	}
@@ -158,13 +158,13 @@ func TestCancelSubscriptionAtPeriodEnd(t *testing.T) {
 	defer Customers.Delete(p1.ID)
 
 	// Subscribe the Customer to the Plan
-	_, err := Subscriptions.Update(cust.ID, &sub1)
+	sub, err := Subscriptions.Create(cust.ID, &sub1)
 	if err != nil {
 		t.Errorf("Expected Subscription, got error %s", err.Error())
 	}
 
 	// Now cancel the subscription
-	subs, err := Subscriptions.CancelAtPeriodEnd(cust.ID)
+	subs, err := Subscriptions.Cancel(cust.ID, sub.ID, true)
 	if err != nil {
 		t.Errorf("Expected Subscription Cancellation, got error %s", err.Error())
 	}

@@ -1,6 +1,7 @@
 package stripe
 
 import (
+	"fmt"
 	"net/url"
 	"strconv"
 )
@@ -68,14 +69,25 @@ type SubscriptionParams struct {
 	Quantity int
 }
 
-// Subscribes a customer to a new plan.
-//
-// see https://stripe.com/docs/api#update_subscription
-func (SubscriptionClient) Update(customerID string, params *SubscriptionParams) (*Subscription, error) {
-	values := url.Values{"plan": {params.Plan}}
+func (c SubscriptionClient) path(customerID, subscriptionID string) string {
+	p := fmt.Sprintf("/customers/%s/subscriptions", url.QueryEscape(customerID))
+	if subscriptionID != "" {
+		p += "/" + url.QueryEscape(subscriptionID)
+	}
+	return p
+}
 
-	// set optional parameters
-	if len(params.Coupon) != 0 {
+func (c SubscriptionClient) Create(customerID string, params *SubscriptionParams) (*Subscription, error) {
+	res := &Subscription{}
+	return res, query("POST", c.path(customerID, ""), c.values(params), res)
+}
+
+func (c SubscriptionClient) values(params *SubscriptionParams) url.Values {
+	values := make(url.Values)
+	if params.Plan != "" {
+		values.Add("plan", params.Plan)
+	}
+	if params.Coupon != "" {
 		values.Add("coupon", params.Coupon)
 	}
 	if params.Prorate {
@@ -87,39 +99,41 @@ func (SubscriptionClient) Update(customerID string, params *SubscriptionParams) 
 	if params.Quantity != 0 {
 		values.Add("quantity", strconv.Itoa(params.Quantity))
 	}
-	// attach a new card, if requested
-	if len(params.Token) != 0 {
+	if params.Token != "" {
 		values.Add("card", params.Token)
 	} else if params.Card != nil {
 		appendCardParams(values, params.Card)
 	}
-
-	s := Subscription{}
-	path := "/customers/" + url.QueryEscape(customerID) + "/subscription"
-	err := query("POST", path, values, &s)
-	return &s, err
+	return values
 }
 
-// Cancels the customer's subscription if it exists.  It cancels the
-// subscription immediately.
+// Subscribes a customer to a new plan.
 //
-// see https://stripe.com/docs/api#cancel_subscription
-func (SubscriptionClient) Cancel(customerID string) (*Subscription, error) {
-	s := Subscription{}
-	path := "/customers/" + url.QueryEscape(customerID) + "/subscription"
-	err := query("DELETE", path, nil, &s)
-	return &s, err
+// see https://stripe.com/docs/api#update_subscription
+func (c SubscriptionClient) Update(customerID, subscriptionID string, params *SubscriptionParams) (*Subscription, error) {
+	res := &Subscription{}
+	return res, query("POST", c.path(customerID, subscriptionID), c.values(params), res)
 }
 
-// Cancels the customer's subscription at the end of the billing period.
-//
-// see https://stripe.com/docs/api#cancel_subscription
-func (SubscriptionClient) CancelAtPeriodEnd(customerID string) (*Subscription, error) {
-	values := url.Values{}
-	values.Add("at_period_end", "true")
+func (c SubscriptionClient) Cancel(customerID, subscriptionID string, atPeriodEnd bool) (*Subscription, error) {
+	values := make(url.Values)
+	if atPeriodEnd {
+		values.Add("at_period_end", "true")
+	}
+	res := &Subscription{}
+	return res, query("DELETE", c.path(customerID, subscriptionID), values, res)
+}
 
-	s := Subscription{}
-	path := "/customers/" + url.QueryEscape(customerID) + "/subscription"
-	err := query("DELETE", path, values, &s)
-	return &s, err
+func (c SubscriptionClient) Retrieve(customerID, subscriptionID string) (*Subscription, error) {
+	res := &Subscription{}
+	return res, query("GET", c.path(customerID, subscriptionID), nil, res)
+}
+
+func (c SubscriptionClient) List(customerID string, limit int, before, after string) ([]*Subscription, bool, error) {
+	res := struct {
+		ListObject
+		Data []*Subscription
+	}{}
+	err := query("GET", c.path(customerID, ""), listParams(limit, before, after), res)
+	return res.Data, res.More, err
 }
