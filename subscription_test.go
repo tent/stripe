@@ -174,6 +174,6 @@ func TestCancelSubscriptionAtPeriodEnd(t *testing.T) {
 	}
 
 	if subs.CancelAtPeriodEnd != true {
-		t.Errorf("Expected CancelAtPeriodEnd to be %s, got %s", true, subs.CancelAtPeriodEnd)
+		t.Errorf("Expected CancelAtPeriodEnd to be %t, got %t", true, subs.CancelAtPeriodEnd)
 	}
 }

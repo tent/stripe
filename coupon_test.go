@@ -137,6 +137,6 @@ func TestListCoupon(t *testing.T) {
 
 	// since we added 2 dummy coupons, we expect the array to be a size of 2
 	if len(coupons) != 2 {
-		t.Errorf("Expected 2 Coupons, got %s", len(coupons))
+		t.Errorf("Expected 2 Coupons, got %d", len(coupons))
 	}
 }

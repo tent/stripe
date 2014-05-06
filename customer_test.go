@@ -139,7 +139,7 @@ func TestRetrieveCustomer(t *testing.T) {
 		t.Errorf("Expected Card Name %s, got %s", cust2.Card.Name, cust.Cards.Data[0].Name)
 	}
 	if cust.Cards.Data[0].Last4 != "4242" {
-		t.Errorf("Expected Card Last4 %d, got %d", "4242", cust.Cards.Data[0].Last4)
+		t.Errorf("Expected Card Last4 %s, got %s", "4242", cust.Cards.Data[0].Last4)
 	}
 	if cust.Cards.Data[0].ExpYear != cust2.Card.ExpYear {
 		t.Errorf("Expected Card ExpYear %d, got %d", cust2.Card.ExpYear, cust.Cards.Data[0].ExpYear)
@@ -209,6 +209,6 @@ func TestListCustomers(t *testing.T) {
 
 	// since we added 2 dummy customers, we expect the array to be a size of 2
 	if len(customers) != 2 {
-		t.Errorf("Expected 2 Customers, got %s", len(customers))
+		t.Errorf("Expected 2 Customers, got %d", len(customers))
 	}
 }

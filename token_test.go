@@ -56,7 +56,7 @@ func TestCreateToken(t *testing.T) {
 		t.Errorf("Expected Token Card ExpYear %d, got %d", token1.Card.ExpYear, resp.Card.ExpYear)
 	}
 	if resp.Card.Last4 != "4242" {
-		t.Errorf("Expected Token Card Last4 4242, got %d", resp.Card.Last4)
+		t.Errorf("Expected Token Card Last4 4242, got %s", resp.Card.Last4)
 	}
 }
 
