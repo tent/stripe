@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -152,4 +153,18 @@ func appendMetadata(values url.Values, meta map[string]string) {
 	for k, v := range meta {
 		values.Add(fmt.Sprintf("metadata[%s]", k), v)
 	}
+}
+
+func listParams(limit int, before, after string) url.Values {
+	params := make(url.Values)
+	if limit > 0 {
+		params.Add("limit", strconv.Itoa(limit))
+	}
+	if before != "" {
+		params.Add("ending_before", before)
+	}
+	if after != "" {
+		params.Add("starting_after", after)
+	}
+	return params
 }

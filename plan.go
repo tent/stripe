@@ -144,28 +144,8 @@ func (c *PlanClient) Delete(id string) (bool, error) {
 // Returns a list of your Plans.
 //
 // see https://stripe.com/docs/api#list_Plans
-func (c *PlanClient) List() ([]*Plan, error) {
-	return c.ListN(10, 0)
-}
-
-// Returns a list of your Plans at the specified range.
-//
-// see https://stripe.com/docs/api#list_Plans
-func (c *PlanClient) ListN(count int, offset int) ([]*Plan, error) {
-	// define a wrapper function for the Plan List, so that we can
-	// cleanly parse the JSON
-	type listPlanResp struct{ Data []*Plan }
-	resp := listPlanResp{}
-
-	// add the count and offset to the list of url values
-	values := url.Values{
-		"count":  {strconv.Itoa(count)},
-		"offset": {strconv.Itoa(offset)},
-	}
-
-	err := query("GET", "/plans", values, &resp)
-	if err != nil {
-		return nil, err
-	}
-	return resp.Data, nil
+func (c *PlanClient) List(limit int, before, after string) ([]*Plan, error) {
+	res := struct{ Data []*Plan }{}
+	err := query("GET", "/plans", listParams(limit, before, after), &res)
+	return res.Data, err
 }

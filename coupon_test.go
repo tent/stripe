@@ -130,7 +130,7 @@ func TestListCoupon(t *testing.T) {
 	defer Coupons.Delete(c2.ID)
 
 	// get the list from Stripe
-	coupons, err := Coupons.List()
+	coupons, err := Coupons.List(10, "", "")
 	if err != nil {
 		t.Errorf("Expected Coupon List, got Error %s", err.Error())
 	}

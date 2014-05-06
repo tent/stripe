@@ -127,31 +127,11 @@ func (c *CouponClient) Delete(id string) (bool, error) {
 	return resp.Deleted, nil
 }
 
-// Returns a list of your coupons.
-//
-// see https://stripe.com/docs/api#list_coupons
-func (c *CouponClient) List() ([]*Coupon, error) {
-	return c.ListN(10, 0)
-}
-
 // Returns a list of your coupons at the specified range.
 //
 // see https://stripe.com/docs/api#list_coupons
-func (c *CouponClient) ListN(count int, offset int) ([]*Coupon, error) {
-	// define a wrapper function for the Coupon List, so that we can
-	// cleanly parse the JSON
-	type listCouponResp struct{ Data []*Coupon }
-	resp := listCouponResp{}
-
-	// add the count and offset to the list of url values
-	values := url.Values{
-		"count":  {strconv.Itoa(count)},
-		"offset": {strconv.Itoa(offset)},
-	}
-
-	err := query("GET", "/coupons", values, &resp)
-	if err != nil {
-		return nil, err
-	}
-	return resp.Data, nil
+func (c *CouponClient) List(limit int, before, after string) ([]*Coupon, error) {
+	res := struct{ Data []*Coupon }{}
+	err := query("GET", "/coupons", listParams(limit, before, after), &res)
+	return res.Data, err
 }

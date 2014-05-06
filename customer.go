@@ -163,33 +163,13 @@ func (c *CustomerClient) Delete(id string) (bool, error) {
 	return resp.Deleted, err
 }
 
-// Returns a list of your Customers.
-//
-// see https://stripe.com/docs/api#list_customers
-func (c *CustomerClient) List() ([]*Customer, error) {
-	return c.ListN(10, 0)
-}
-
 // Returns a list of your Customers at the specified range.
 //
 // see https://stripe.com/docs/api#list_customers
-func (c *CustomerClient) ListN(count int, offset int) ([]*Customer, error) {
-	// define a wrapper function for the Customer List, so that we can
-	// cleanly parse the JSON
-	type listCustomerResp struct{ Data []*Customer }
-	resp := listCustomerResp{}
-
-	// add the count and offset to the list of url values
-	values := url.Values{
-		"count":  {strconv.Itoa(count)},
-		"offset": {strconv.Itoa(offset)},
-	}
-
-	err := query("GET", "/customers", values, &resp)
-	if err != nil {
-		return nil, err
-	}
-	return resp.Data, nil
+func (c *CustomerClient) List(limit int, before, after string) ([]*Customer, error) {
+	res := struct{ Data []*Customer }{}
+	err := query("GET", "/customers", listParams(limit, before, after), &res)
+	return res.Data, err
 }
 
 ////////////////////////////////////////////////////////////////////////////////

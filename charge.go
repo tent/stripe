@@ -161,54 +161,26 @@ func (c *ChargeClient) RefundAmount(id string, amt int) (*Charge, error) {
 	return &charge, err
 }
 
-// Returns a list of your Charges.
-//
-// see https://stripe.com/docs/api#list_charges
-func (c *ChargeClient) List() ([]*Charge, error) {
-	return c.list("", 10, 0)
-}
-
 // Returns a list of your Charges with the specified range.
 //
 // see https://stripe.com/docs/api#list_charges
-func (c *ChargeClient) ListN(count int, offset int) ([]*Charge, error) {
-	return c.list("", count, offset)
+func (c *ChargeClient) List(limit int, before, after string) ([]*Charge, error) {
+	return c.list("", limit, before, after)
 }
 
 // Returns a list of your Charges with the given Customer ID.
 //
 // see https://stripe.com/docs/api#list_charges
-func (c *ChargeClient) CustomerList(id string) ([]*Charge, error) {
-	return c.list(id, 10, 0)
+func (c *ChargeClient) CustomerList(id string, limit int, before, after string) ([]*Charge, error) {
+	return c.list(id, limit, before, after)
 }
 
-// Returns a list of your Charges with the given Customer ID and range.
-//
-// see https://stripe.com/docs/api#list_charges
-func (c *ChargeClient) CustomerListN(id string, count int, offset int) ([]*Charge, error) {
-	return c.list(id, count, offset)
-}
-
-func (c *ChargeClient) list(id string, count int, offset int) ([]*Charge, error) {
-	// define a wrapper function for the Charge List, so that we can
-	// cleanly parse the JSON
-	type listChargesResp struct{ Data []*Charge }
-	resp := listChargesResp{}
-
-	// add the count and offset to the list of url values
-	values := url.Values{
-		"count":  {strconv.Itoa(count)},
-		"offset": {strconv.Itoa(offset)},
-	}
-
-	// query for customer id, if provided
+func (c *ChargeClient) list(id string, limit int, before, after string) ([]*Charge, error) {
+	res := struct{ Data []*Charge }{}
+	params := listParams(limit, before, after)
 	if id != "" {
-		values.Add("customer", id)
+		params.Add("customer", id)
 	}
-
-	err := query("GET", "/charges", values, &resp)
-	if err != nil {
-		return nil, err
-	}
-	return resp.Data, nil
+	err := query("GET", "/charges", params, &res)
+	return res.Data, err
 }

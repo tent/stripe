@@ -157,7 +157,7 @@ func TestListPlan(t *testing.T) {
 	defer Plans.Delete(p2.ID)
 
 	// get the list from Stripe
-	plans, err := Plans.List()
+	plans, err := Plans.List(10, "", "")
 	if err != nil {
 		t.Errorf("Expected Plan List, got Error %s", err.Error())
 	}

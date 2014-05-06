@@ -128,52 +128,23 @@ func (c *InvoiceItemClient) Delete(id string) (bool, error) {
 // Returns a list of Invoice Items.
 //
 // see https://stripe.com/docs/api#list_invoiceitems
-func (c *InvoiceItemClient) List() ([]*InvoiceItem, error) {
-	return c.list("", 10, 0)
-}
-
-// Returns a list of Invoice Items at the specified range.
-//
-// see https://stripe.com/docs/api#list_invoiceitems
-func (c *InvoiceItemClient) ListN(count int, offset int) ([]*InvoiceItem, error) {
-	return c.list("", count, offset)
+func (c *InvoiceItemClient) List(limit int, before, after string) ([]*InvoiceItem, error) {
+	return c.list("", limit, before, after)
 }
 
 // Returns a list of Invoice Items for the specified Customer ID.
 //
 // see https://stripe.com/docs/api#list_invoiceitems
-func (c *InvoiceItemClient) CustomerList(id string) ([]*InvoiceItem, error) {
-	return c.list(id, 10, 0)
+func (c *InvoiceItemClient) CustomerListN(id string, limit int, before, after string) ([]*InvoiceItem, error) {
+	return c.list(id, limit, before, after)
 }
 
-// Returns a list of Invoice Items for the specified Customer ID, at the
-// specified range.
-//
-// see https://stripe.com/docs/api#list_invoiceitems
-func (c *InvoiceItemClient) CustomerListN(id string, count int, offset int) ([]*InvoiceItem, error) {
-	return c.list(id, count, offset)
-}
-
-func (c *InvoiceItemClient) list(id string, count int, offset int) ([]*InvoiceItem, error) {
-	// define a wrapper function for the Invoice Items List, so that we can
-	// cleanly parse the JSON
-	type listInvoiceItemsResp struct{ Data []*InvoiceItem }
-	resp := listInvoiceItemsResp{}
-
-	// add the count and offset to the list of url values
-	values := url.Values{
-		"count":  {strconv.Itoa(count)},
-		"offset": {strconv.Itoa(offset)},
-	}
-
-	// query for customer id, if provided
+func (c *InvoiceItemClient) list(id string, limit int, before, after string) ([]*InvoiceItem, error) {
+	res := struct{ Data []*InvoiceItem }{}
+	params := listParams(limit, before, after)
 	if id != "" {
-		values.Add("customer", id)
+		params.Add("customer", id)
 	}
-
-	err := query("GET", "/invoiceitems", values, &resp)
-	if err != nil {
-		return nil, err
-	}
-	return resp.Data, nil
+	err := query("GET", "/invoiceitems", params, &res)
+	return res.Data, err
 }

@@ -1,9 +1,6 @@
 package stripe
 
-import (
-	"net/url"
-	"strconv"
-)
+import "net/url"
 
 // Invoice represents statements of what a customer owes for a particular
 // billing period, including subscriptions, invoice items, and any automatic
@@ -83,54 +80,27 @@ func (c *InvoiceClient) RetrieveCustomer(cid string) (*Invoice, error) {
 	return &invoice, err
 }
 
-// Returns a list of Invoices.
-//
-// see https://stripe.com/docs/api#list_customer_invoices
-func (c *InvoiceClient) List() ([]*Invoice, error) {
-	return c.list("", 10, 0)
-}
-
 // Returns a list of Invoices at the specified range.
 //
 // see https://stripe.com/docs/api#list_customer_invoices
-func (c *InvoiceClient) ListN(count int, offset int) ([]*Invoice, error) {
-	return c.list("", count, offset)
+func (c *InvoiceClient) List(limit int, before, after string) ([]*Invoice, error) {
+	return c.list("", limit, before, after)
 }
 
 // Returns a list of Invoices with the given Customer ID.
 //
 // see https://stripe.com/docs/api#list_customer_invoices
-func (c *InvoiceClient) CustomerList(id string) ([]*Invoice, error) {
-	return c.list(id, 10, 0)
+func (c *InvoiceClient) CustomerList(id string, limit int, before, after string) ([]*Invoice, error) {
+	return c.list(id, limit, before, after)
 }
 
-// Returns a list of Invoices with the given Customer ID, at the specified range.
-//
-// see https://stripe.com/docs/api#list_customer_invoices
-func (c *InvoiceClient) CustomerListN(id string, count int, offset int) ([]*Invoice, error) {
-	return c.list(id, count, offset)
-}
-
-func (c *InvoiceClient) list(id string, count int, offset int) ([]*Invoice, error) {
-	// define a wrapper function for the Invoice List, so that we can
-	// cleanly parse the JSON
-	type listInvoicesResp struct{ Data []*Invoice }
-	resp := listInvoicesResp{}
-
-	// add the count and offset to the list of url values
-	values := url.Values{
-		"count":  {strconv.Itoa(count)},
-		"offset": {strconv.Itoa(offset)},
-	}
-
+func (c *InvoiceClient) list(id string, limit int, before, after string) ([]*Invoice, error) {
+	res := struct{ Data []*Invoice }{}
+	params := listParams(limit, before, after)
 	// query for customer id, if provided
 	if id != "" {
-		values.Add("customer", id)
+		params.Add("customer", id)
 	}
-
-	err := query("GET", "/invoices", values, &resp)
-	if err != nil {
-		return nil, err
-	}
-	return resp.Data, nil
+	err := query("GET", "/invoices", params, &res)
+	return res.Data, err
 }
