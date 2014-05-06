@@ -74,7 +74,15 @@ type CardParams struct {
 
 type CardClient struct{}
 
-func (CardClient) Create(customerID, token string, card *CardParams) (*Card, error) {
+func (c CardClient) path(customerID, cardID string) string {
+	p := fmt.Sprintf("/customers/%s/cards", url.QueryEscape(customerID))
+	if cardID != "" {
+		p += "/" + url.QueryEscape(cardID)
+	}
+	return p
+}
+
+func (c CardClient) Create(customerID, token string, card *CardParams) (*Card, error) {
 	params := make(url.Values)
 	if token != "" {
 		params.Add("card", token)
@@ -82,33 +90,33 @@ func (CardClient) Create(customerID, token string, card *CardParams) (*Card, err
 		appendCardParams(params, card)
 	}
 	res := &Card{}
-	return res, query("POST", fmt.Sprintf("/customers/%s/cards", url.QueryEscape(customerID)), params, res)
+	return res, query("POST", c.path(customerID, ""), params, res)
 }
 
-func (CardClient) Update(customerID, cardID string, card *CardParams) (*Card, error) {
+func (c CardClient) Update(customerID, cardID string, card *CardParams) (*Card, error) {
 	params := make(url.Values)
 	appendCardParams(params, card)
 	res := &Card{}
-	return res, query("POST", fmt.Sprintf("/customers/%s/cards/%s", url.QueryEscape(customerID), url.QueryEscape(cardID)), params, res)
+	return res, query("POST", c.path(customerID, cardID), params, res)
 }
 
-func (CardClient) Delete(customerID, cardID string) (bool, error) {
+func (c CardClient) Delete(customerID, cardID string) (bool, error) {
 	res := &DeleteResp{}
-	err := query("DELETE", fmt.Sprintf("/customers/%s/cards/%s", url.QueryEscape(customerID), url.QueryEscape(cardID)), nil, res)
+	err := query("DELETE", c.path(customerID, cardID), nil, res)
 	return res.Deleted, err
 }
 
-func (CardClient) Retrieve(customerID, cardID string) (*Card, error) {
+func (c CardClient) Retrieve(customerID, cardID string) (*Card, error) {
 	res := &Card{}
-	return res, query("GET", fmt.Sprintf("/customers/%s/cards/%s", url.QueryEscape(customerID), url.QueryEscape(cardID)), nil, res)
+	return res, query("GET", c.path(customerID, cardID), nil, res)
 }
 
-func (CardClient) List(customerID string, limit int, before, after string) ([]*Card, bool, error) {
+func (c CardClient) List(customerID string, limit int, before, after string) ([]*Card, bool, error) {
 	res := struct {
 		ListObject
 		Data []*Card
 	}{}
-	err := query("GET", fmt.Sprintf("/customers/%s/cards", url.QueryEscape(customerID)), listParams(limit, before, after), &res)
+	err := query("GET", c.path(customerID, ""), listParams(limit, before, after), &res)
 	return res.Data, res.More, err
 }
 
