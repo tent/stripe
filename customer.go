@@ -1,7 +1,6 @@
 package stripe
 
 import (
-	"fmt"
 	"net/url"
 	"strconv"
 )
@@ -128,30 +127,6 @@ func (CustomerClient) Update(id string, cust *CustomerParams) (*Customer, error)
 
 	err := query("POST", "/customers/"+url.QueryEscape(id), params, &customer)
 	return &customer, err
-}
-
-func (CustomerClient) CreateCard(customerID, token string, card *CardParams) (*Card, error) {
-	params := make(url.Values)
-	if token != "" {
-		params.Add("card", token)
-	} else {
-		appendCardParams(params, card)
-	}
-	res := &Card{}
-	return res, query("POST", fmt.Sprintf("/customers/%s/cards", url.QueryEscape(customerID)), params, res)
-}
-
-func (CustomerClient) UpdateCard(customerID, cardID string, card *CardParams) (*Card, error) {
-	params := make(url.Values)
-	appendCardParams(params, card)
-	res := &Card{}
-	return res, query("POST", fmt.Sprintf("/customers/%s/cards/%s", url.QueryEscape(customerID), url.QueryEscape(cardID)), params, res)
-}
-
-func (CustomerClient) DeleteCard(customerID, cardID string) (bool, error) {
-	res := &DeleteResp{}
-	err := query("DELETE", fmt.Sprintf("/customers/%s/cards/%s", url.QueryEscape(customerID), url.QueryEscape(cardID)), nil, res)
-	return res.Deleted, err
 }
 
 // Deletes a Customer (permanently) with the given ID.

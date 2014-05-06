@@ -46,6 +46,7 @@ var (
 	Plans         = new(PlanClient)
 	Subscriptions = new(SubscriptionClient)
 	Tokens        = new(TokenClient)
+	Cards         = new(CardClient)
 )
 
 // SetKeyEnv retrieves the Stripe API key using the STRIPE_API_KEY environment

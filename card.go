@@ -1,6 +1,8 @@
 package stripe
 
 import (
+	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -68,6 +70,46 @@ type CardParams struct {
 
 	// (Optional) Billing address zip code
 	AddressZip string
+}
+
+type CardClient struct{}
+
+func (CardClient) Create(customerID, token string, card *CardParams) (*Card, error) {
+	params := make(url.Values)
+	if token != "" {
+		params.Add("card", token)
+	} else {
+		appendCardParams(params, card)
+	}
+	res := &Card{}
+	return res, query("POST", fmt.Sprintf("/customers/%s/cards", url.QueryEscape(customerID)), params, res)
+}
+
+func (CardClient) Update(customerID, cardID string, card *CardParams) (*Card, error) {
+	params := make(url.Values)
+	appendCardParams(params, card)
+	res := &Card{}
+	return res, query("POST", fmt.Sprintf("/customers/%s/cards/%s", url.QueryEscape(customerID), url.QueryEscape(cardID)), params, res)
+}
+
+func (CardClient) Delete(customerID, cardID string) (bool, error) {
+	res := &DeleteResp{}
+	err := query("DELETE", fmt.Sprintf("/customers/%s/cards/%s", url.QueryEscape(customerID), url.QueryEscape(cardID)), nil, res)
+	return res.Deleted, err
+}
+
+func (CardClient) Retrieve(customerID, cardID string) (*Card, error) {
+	res := &Card{}
+	return res, query("GET", fmt.Sprintf("/customers/%s/cards/%s", url.QueryEscape(customerID), url.QueryEscape(cardID)), nil, res)
+}
+
+func (CardClient) List(customerID string, limit int, before, after string) ([]*Card, bool, error) {
+	res := struct {
+		More bool `json:"has_more"`
+		Data []*Card
+	}{}
+	err := query("GET", fmt.Sprintf("/customers/%s/cards", url.QueryEscape(customerID)), listParams(limit, before, after), &res)
+	return res.Data, res.More, err
 }
 
 // IsLuhnValid uses the Luhn Algorithm (also known as the Mod 10 algorithm) to
