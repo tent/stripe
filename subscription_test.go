@@ -25,7 +25,6 @@ var (
 	sub2 = SubscriptionParams{
 		Plan:     "plan1",
 		Coupon:   "test coupon 1",
-		Prorate:  true,
 		TrialEnd: &UnixTime{time.Now().Add(24 * time.Hour)},
 		Quantity: 5,
 		Card: &CardParams{

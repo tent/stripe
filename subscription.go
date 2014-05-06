@@ -50,8 +50,8 @@ type SubscriptionParams struct {
 	Coupon string
 
 	// (Optional) Flag telling us whether to prorate switching plans during a
-	// billing cycle
-	Prorate bool
+	// billing cycle. Default is true.
+	Prorate *bool
 
 	// (Optional) UTC integer timestamp representing the end of the trial period
 	// the customer will get before being charged for the first time. If set,
@@ -90,8 +90,8 @@ func (c SubscriptionClient) values(params *SubscriptionParams) url.Values {
 	if params.Coupon != "" {
 		values.Add("coupon", params.Coupon)
 	}
-	if params.Prorate {
-		values.Add("prorate", "true")
+	if params.Prorate != nil && !*params.Prorate {
+		values.Add("prorate", "false")
 	}
 	if params.TrialEnd != nil {
 		values.Add("trial_end", strconv.FormatInt(params.TrialEnd.Unix(), 10))
