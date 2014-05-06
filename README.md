@@ -1,15 +1,14 @@
-# go.stripe
-[![](https://drone.io/drone/go.stripe/status.png)](https://drone.io/drone/go.stripe/latest)
+# stripe
 
-a simple Credit Card processing library for Go using the Stripe API
+Stripe API client written in Go.
 
 ```sh
-go get https://github.com/bradrydzewski/go.stripe
+go get https://github.com/cupcake/stripe
 ```
 
 ## Examples
 
-In order to use the `go.stripe` API you will need to create an account with
+In order to use the `stripe` API you will need to create an account with
 stripe.com, and obtain an Secret Key. You must set this key by invoking the
 following function:
 
@@ -65,16 +64,7 @@ Note: the amount charged is $4.00, but is specified in cents (400 cents == $4)
 
 ## Documentation
 
-* [Customers](https://github.com/bradrydzewski/go.stripe/wiki/Customers)
-* [Charges](https://github.com/bradrydzewski/go.stripe/wiki/Charges)
-* [Coupons](https://github.com/bradrydzewski/go.stripe/wiki/Coupons)
-* [Invoices](https://github.com/bradrydzewski/go.stripe/wiki/Invoices)
-* [Invoice Items](https://github.com/bradrydzewski/go.stripe/wiki/Invoice-Items)
-* [Plans](https://github.com/bradrydzewski/go.stripe/wiki/Plans)
-* [Subscriptions](https://github.com/bradrydzewski/go.stripe/wiki/Subscriptions)
-* [Tokens](https://github.com/bradrydzewski/go.stripe/wiki/Tokens)
-
-You can also have a look at the [Godocs](http://gopkgdoc.appspot.com/pkg/github.com/bradrydzewski/go.stripe).
+Have a look at the [Godocs](http://godoc.org/github.com/cupcake/stripe).
 
 ## Unit Tests
 
