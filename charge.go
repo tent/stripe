@@ -21,29 +21,37 @@ const (
 //
 // see https://stripe.com/docs/api#charge_object
 type Charge struct {
-	ID             string
-	Description    string
-	Amount         int
-	Card           *Card
-	Currency       string
-	Created        UnixTime
-	Customer       string
-	Invoice        string
-	Paid           bool
-	Refunded       bool
-	AmountRefunded int    `json:"amount_refunded"`
-	FailureMessage string `json:"failure_message"`
-	Disputed       bool
-	Livemode       bool
+	ID                 string            `json:"id"`
+	Description        string            `json:"description,omitempty"`
+	Amount             int               `json:"amount"`
+	Card               *Card             `json:"card"`
+	Currency           string            `json:"currency"`
+	Created            UnixTime          `json:"created"`
+	Customer           string            `json:"customer,omitempty"`
+	Invoice            string            `json:"invoice,omitempty"`
+	Paid               bool              `json:"paid"`
+	Refunded           bool              `json:"refunded,omitempty"`
+	AmountRefunded     int               `json:"amount_refunded,omitempty"`
+	BalanceTransaction string            `json:"balance_transaction"`
+	Dispute            *Dispute          `json:"dispute,omitempty"`
+	FailureMessage     string            `json:"failure_message,omitempty"`
+	FailureCode        string            `json:"failure_code,omitempty"`
+	Metadata           map[string]string `json:"metadata,omitempty"`
+	Livemode           bool              `json:"livemode"`
 }
 
-// FeeDetails represents a single fee associated with a Charge.
-type FeeDetails struct {
-	Amount      int
-	Currency    string
-	Type        string
-	Description string
-	Application string
+type Dispute struct {
+	Charge             string    `json:"charge"`
+	Livemode           bool      `json:"livemode"`
+	Amount             int       `json:"amount"`
+	Created            UnixTime  `json:"created"`
+	Currency           string    `json:"currency"`
+	Reason             string    `json:"reason"`
+	Status             string    `json:"status"`
+	BalanceTransaction string    `json:"balance_transaction"`
+	Evidence           string    `json:"evidence,omitempty"`
+	EvidenceDueBy      *UnixTime `json:"evidence_due_by,omitempty"`
+	Protected          bool      `json:"is_protected,omitempty"`
 }
 
 // ChargeParams encapsulates options for creating a new Charge.
@@ -69,6 +77,15 @@ type ChargeParams struct {
 	// displayed when in the web interface alongside the charge. It's often a
 	// good idea to use an email address as a description for tracking later.
 	Description string
+
+	// Whether or not to immediately capture the charge. Default is true.
+	Capture *bool
+
+	// An arbitrary string to be displayed alongside your company name on your
+	// customer's credit card statement. This may be up to 15 characters.
+	StatementDescription string
+
+	Metadata map[string]string
 }
 
 // ChargeClient encapsulates operations for creating, updating, deleting and
@@ -81,10 +98,20 @@ type ChargeClient struct{}
 func (c *ChargeClient) Create(params *ChargeParams) (*Charge, error) {
 	charge := Charge{}
 	values := url.Values{
-		"amount":      {strconv.Itoa(params.Amount)},
-		"currency":    {params.Currency},
-		"description": {params.Description},
+		"amount":   {strconv.Itoa(params.Amount)},
+		"currency": {params.Currency},
 	}
+
+	if params.Description != "" {
+		values.Add("description", params.Description)
+	}
+	if params.Capture != nil && !*params.Capture {
+		values.Add("capture", "false")
+	}
+	if params.StatementDescription != "" {
+		values.Add("statement_description", params.StatementDescription)
+	}
+	appendMetadata(values, params.Metadata)
 
 	// add optional credit card details, if specified
 	if params.Card != nil {

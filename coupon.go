@@ -16,16 +16,18 @@ const (
 //
 // see https://stripe.com/docs/api#coupon_object
 type Coupon struct {
-	ID               string
-	Duration         string
-	AmountOff        int      `json:"amount_off"`
-	PercentOff       int      `json:"percent_off"`
-	DurationInMonths int      `json:"duration_in_months"`
-	MaxRedemptions   int      `json:"max_redemptions"`
-	RedeemBy         UnixTime `json:"redeem_by"`
-	TimesRedeemed    int      `json:"times_redeemed"`
-	Livemode         bool
-	Created          UnixTime
+	ID               string            `json:"id"`
+	Duration         string            `json:"duration"`
+	AmountOff        int               `json:"amount_off,omitempty"`
+	PercentOff       int               `json:"percent_off,omitempty"`
+	DurationInMonths int               `json:"duration_in_months,omitempty"`
+	MaxRedemptions   int               `json:"max_redemptions,omitempty"`
+	RedeemBy         *UnixTime         `json:"redeem_by,omitempty"`
+	TimesRedeemed    int               `json:"times_redeemed"`
+	Livemode         bool              `json:"livemode"`
+	Created          UnixTime          `json:"created"`
+	Metadata         map[string]string `json:"metadata"`
+	Valid            bool              `json:"valid"`
 }
 
 // CouponClient encapsulates operations for creating, updating, deleting and
@@ -46,6 +48,13 @@ type CouponParams struct {
 	// or repeating.
 	Duration string
 
+	// A positive integer representing the amount to subtract from an invoice
+	// total (required if percent_off is not passed)
+	AmountOff int
+
+	// Currency of the amount_off parameter (required if amount_off is passed)
+	Currency string
+
 	// (Optional) If duration is repeating, a positive integer that specifies
 	// the number of months the discount will be in effect.
 	DurationInMonths int
@@ -59,6 +68,8 @@ type CouponParams struct {
 	// be redeemed. After the redeem_by date, the coupon can no longer be
 	// applied to new customers.
 	RedeemBy *UnixTime
+
+	Metadata map[string]string
 }
 
 // Creates a new Coupon.
@@ -71,25 +82,25 @@ func (c *CouponClient) Create(params *CouponParams) (*Coupon, error) {
 		"percent_off": {strconv.Itoa(params.PercentOff)},
 	}
 
-	// coupon id is optional, add if specified
 	if len(params.ID) != 0 {
 		values.Add("id", params.ID)
 	}
-
-	// duration in months is optional, add if specified
 	if params.DurationInMonths != 0 {
 		values.Add("duration_in_months", strconv.Itoa(params.DurationInMonths))
 	}
-
-	// max_redemptions is optional, add if specified
 	if params.MaxRedemptions != 0 {
 		values.Add("max_redemptions", strconv.Itoa(params.MaxRedemptions))
 	}
 
-	// redeem_by is optional, add if specified
+	if params.AmountOff != 0 {
+		values.Add("amount_off", strconv.Itoa(params.AmountOff))
+		values.Add("currency", params.Currency)
+	}
 	if params.RedeemBy != nil {
 		values.Add("redeem_by", strconv.FormatInt(params.RedeemBy.Unix(), 10))
 	}
+	appendMetadata(values, params.Metadata)
+
 	err := query("POST", "/coupons", values, &coupon)
 	return &coupon, err
 }

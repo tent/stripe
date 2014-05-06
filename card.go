@@ -18,23 +18,23 @@ const (
 
 // Card represents details about a Credit Card entered into Stripe.
 type Card struct {
-	ID                string
-	Name              string
-	Type              string
-	ExpMonth          int `json:"exp_month"`
-	ExpYear           int `json:"exp_year"`
-	Last4             string
-	Fingerprint       string
-	Country           string
-	Address1          string `json:"address_line1"`
-	Address2          string `json:"address_line2"`
-	AddressCountry    string `json:"address_country"`
-	AddressState      string `json:"address_state"`
-	AddressZip        string `json:"address_zip"`
-	AddressLine1Check string `json:"address_line1_check"`
-	AddressZipCheck   string `json:"address_zip_check"`
-	CVCCheck          string `json:"cvc_check"`
-	Customer          string
+	ID                string `json:"id"`
+	Name              string `json:"name,omitempty"`
+	Type              string `json:"type"`
+	ExpMonth          int    `json:"exp_month"`
+	ExpYear           int    `json:"exp_year"`
+	Last4             string `json:"last4"`
+	Fingerprint       string `json:"fingerprint"`
+	Country           string `json:"country,omitempty"`
+	Address1          string `json:"address_line1,omitempty"`
+	Address2          string `json:"address_line2,omitempty"`
+	AddressCountry    string `json:"address_country,omitempty"`
+	AddressState      string `json:"address_state,omitempty"`
+	AddressZip        string `json:"address_zip,omitempty"`
+	AddressLine1Check string `json:"address_line1_check,omitempty"`
+	AddressZipCheck   string `json:"address_zip_check,omitempty"`
+	CVCCheck          string `json:"cvc_check,omitempty"`
+	Customer          string `json:"customer,omitempty"`
 }
 
 // CardParams encapsulates options for Creating or Updating Credit Cards.

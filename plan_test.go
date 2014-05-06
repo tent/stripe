@@ -120,7 +120,7 @@ func TestUpdatePlan(t *testing.T) {
 	Plans.Create(&p1)
 	defer Plans.Delete(p1.ID)
 
-	plan, err := Plans.Update(p1.ID, "New Name")
+	plan, err := Plans.Update(p1.ID, &PlanParams{Name: "New Name"})
 	if err != nil {
 		t.Errorf("Expected Plan update, got Error %s", err.Error())
 	}

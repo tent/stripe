@@ -38,9 +38,6 @@ func TestCreateToken(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected Token Created, got Error %s", err.Error())
 	}
-	if resp.Amount != 0 {
-		t.Errorf("Expected Token Amount 0, got %v", resp.Amount)
-	}
 	if resp.Used == true {
 		t.Errorf("Expected Token Used false, got true")
 		return

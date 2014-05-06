@@ -9,19 +9,19 @@ import (
 //
 // see https://stripe.com/docs/api#customer_object
 type Customer struct {
-	ID            string
-	Description   string
-	Email         string
-	Created       UnixTime
-	Balance       int `json:"account_balance"`
-	Currency      string
-	Delinquent    bool
-	Cards         *CardList
-	Discount      *Discount
-	Subscriptions *SubscriptionList
-	Livemode      bool
-	DefaultCard   string `json:"default_card"`
-	Metadata      map[string]string
+	ID            string            `json:"id"`
+	Description   string            `json:"description,omitempty"`
+	Email         string            `json:"email,omitempty"`
+	Created       UnixTime          `json:"created"`
+	Balance       int               `json:"account_balance,omitempty"`
+	Currency      string            `json:"currency"`
+	Delinquent    bool              `json:"delinquent,omitempty"`
+	Cards         *CardList         `json:"cards,omitempty"`
+	Discount      *Discount         `json:"discount,omitempty"`
+	Subscriptions *SubscriptionList `json:"subscriptions,omitempty"`
+	Livemode      bool              `json:"livemode"`
+	DefaultCard   string            `json:"default_card"`
+	Metadata      map[string]string `json:"metadata,omitempty"`
 }
 
 type ListObject struct {
@@ -31,12 +31,12 @@ type ListObject struct {
 
 type SubscriptionList struct {
 	ListObject
-	Data []*Subscription
+	Data []*Subscription `json:"data"`
 }
 
 type CardList struct {
 	ListObject
-	Data []*Card
+	Data []*Card `json:"data"`
 }
 
 // Discount represents the actual application of a coupon to a particular
@@ -44,11 +44,11 @@ type CardList struct {
 //
 // see https://stripe.com/docs/api#discount_object
 type Discount struct {
-	Customer     string
-	Start        UnixTime
-	End          UnixTime
-	Coupon       *Coupon
-	Subscription string
+	Customer     string    `json:"customer"`
+	Start        UnixTime  `json:"start"`
+	End          *UnixTime `json:"end,omitempty"`
+	Coupon       *Coupon   `json:"coupon"`
+	Subscription string    `json:"subscription,omitempty"`
 }
 
 // CustomerParams encapsulates options for creating and updating Customers.

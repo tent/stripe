@@ -18,18 +18,20 @@ const (
 //
 // see https://stripe.com/docs/api#subscription_object
 type Subscription struct {
-	Customer           string
-	Status             string
-	Plan               *Plan
-	Start              UnixTime `json:"start"`
-	EndedAt            UnixTime `json:"ended_at"`
-	CurrentPeriodStart UnixTime `json:"current_period_start"`
-	CurrentPeriodEnd   UnixTime `json:"current_period_end"`
-	TrialStart         UnixTime `json:"trial_start"`
-	TrialEnd           UnixTime `json:"trial_end"`
-	CanceledAt         UnixTime `json:"canceled_at"`
-	CancelAtPeriodEnd  bool     `json:"cancel_at_period_end"`
-	Quantity           int
+	ID                 string    `json:"id"`
+	Customer           string    `json:"customer"`
+	Status             string    `json:"status"`
+	Plan               *Plan     `json:"plan"`
+	Start              UnixTime  `json:"start"`
+	EndedAt            *UnixTime `json:"ended_at,omitempty"`
+	CurrentPeriodStart UnixTime  `json:"current_period_start"`
+	CurrentPeriodEnd   UnixTime  `json:"current_period_end"`
+	TrialStart         *UnixTime `json:"trial_start,omitempty"`
+	TrialEnd           *UnixTime `json:"trial_end,omitempty"`
+	CanceledAt         *UnixTime `json:"canceled_at,omitempty"`
+	CancelAtPeriodEnd  bool      `json:"cancel_at_period_end"`
+	Quantity           int       `json:"quantity"`
+	Discount           *Discount `json:"discount,omitempty"`
 }
 
 // SubscriptionClient encapsulates operations for updating and canceling

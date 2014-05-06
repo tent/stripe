@@ -9,13 +9,11 @@ import (
 //
 // see https://stripe.com/docs/api#token_object
 type Token struct {
-	ID       string
-	Amount   int
-	Currency string
-	Card     *Card
-	Created  UnixTime
-	Used     bool
-	Livemode bool
+	ID       string   `json:"id"`
+	Card     *Card    `json:"card"`
+	Created  UnixTime `json:"created"`
+	Used     bool     `json:"used"`
+	Livemode bool     `json:"livemode"`
 }
 
 // TokenClient encapsulates operations for creating and querying tokens using
@@ -24,7 +22,6 @@ type TokenClient struct{}
 
 // TokenParams encapsulates options for creating a new Card Token.
 type TokenParams struct {
-	//Currency string REMOVED! no longer part of the API
 	Card *CardParams
 }
 
@@ -36,7 +33,7 @@ type TokenParams struct {
 // see https://stripe.com/docs/api#create_token
 func (c *TokenClient) Create(params *TokenParams) (*Token, error) {
 	token := &Token{}
-	values := make(url.Values) // REMOVED "currency": {params.Currency}}
+	values := make(url.Values)
 	appendCardParams(values, params.Card)
 
 	err := query("POST", "/tokens", values, token)

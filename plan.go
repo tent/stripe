@@ -17,13 +17,17 @@ const (
 //
 // see https://stripe.com/docs/api#plan_object
 type Plan struct {
-	ID              string
-	Name            string
-	Amount          int
-	Interval        string
-	Currency        string
-	TrialPeriodDays int `json:"trial_period_days"`
-	Livemode        bool
+	ID                   string            `json:"id"`
+	Name                 string            `json:"name"`
+	Amount               int               `json:"amount"`
+	Interval             string            `json:"interval"`
+	IntervalCount        int               `json:"interval_count"`
+	Currency             string            `json:"currency"`
+	TrialPeriodDays      int               `json:"trial_period_days"`
+	StatementDescription string            `json:"statement_description,omitempty"`
+	Livemode             bool              `json:"livemode"`
+	Created              UnixTime          `json:"created"`
+	Metadata             map[string]string `json:"metadata"`
 }
 
 // PlanClient encapsulates operations for creating, updating, deleting and
@@ -46,6 +50,9 @@ type PlanParams struct {
 	// Specifies billing frequency. Either month or year.
 	Interval string
 
+	// The number of intervals between each subscription billing.
+	IntervalCount int
+
 	// Name of the plan, to be displayed on invoices and in the web interface.
 	Name string
 
@@ -54,6 +61,13 @@ type PlanParams struct {
 	// time until the trial period ends. If the customer cancels before the
 	// trial period is over, she'll never be billed at all.
 	TrialPeriodDays int
+
+	// An arbitrary string to be displayed on your customers' credit card
+	// statements (alongside your company name) for charges created by this
+	// plan.
+	StatementDescription *string
+
+	Metadata map[string]string
 }
 
 // Creates a new Plan.
@@ -73,6 +87,13 @@ func (c *PlanClient) Create(params *PlanParams) (*Plan, error) {
 	if params.TrialPeriodDays != 0 {
 		values.Add("trial_period_days", strconv.Itoa(params.TrialPeriodDays))
 	}
+	if params.IntervalCount > 1 {
+		values.Add("interval_count", strconv.Itoa(params.IntervalCount))
+	}
+	if params.StatementDescription != nil {
+		values.Add("statement_description", *params.StatementDescription)
+	}
+	appendMetadata(values, params.Metadata)
 
 	err := query("POST", "/plans", values, &plan)
 	return &plan, err
@@ -92,8 +113,16 @@ func (c *PlanClient) Retrieve(id string) (*Plan, error) {
 // by design, not editable.
 //
 // see https://stripe.com/docs/api#update_plan
-func (c *PlanClient) Update(id string, newName string) (*Plan, error) {
-	values := url.Values{"name": {newName}}
+func (c *PlanClient) Update(id string, params *PlanParams) (*Plan, error) {
+	values := make(url.Values)
+	if params.Name != "" {
+		values.Add("name", params.Name)
+	}
+	if params.StatementDescription != nil {
+		values.Add("statement_description", *params.StatementDescription)
+	}
+	appendMetadata(values, params.Metadata)
+
 	plan := Plan{}
 	path := "/plans/" + url.QueryEscape(id)
 	err := query("POST", path, values, &plan)

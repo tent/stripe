@@ -10,14 +10,17 @@ import (
 //
 // see https://stripe.com/docs/api#invoiceitem_object
 type InvoiceItem struct {
-	ID          string
-	Amount      int
-	Currency    string
-	Customer    string
-	Date        UnixTime
-	Description string
-	Invoice     string
-	Livemode    bool
+	ID           string            `json:"id"`
+	Amount       int               `json:"amount"`
+	Currency     string            `json:"currency"`
+	Customer     string            `json:"customer"`
+	Date         UnixTime          `json:"date"`
+	Description  string            `json:"description,omitempty"`
+	Invoice      string            `json:"invoice,omitempty"`
+	Subscription string            `json:"subscription,omitempty"`
+	Proration    bool              `json:"proration"`
+	Metadata     map[string]string `json:"metadata,omitempty"`
+	Livemode     bool              `json:"livemode"`
 }
 
 // InvoiceItemParams encapsulates options for creating a new Invoice Items.
@@ -31,7 +34,7 @@ type InvoiceItemParams struct {
 	// negative amount.
 	Amount int
 
-	// 3-letter ISO code for currency. Currently, only 'usd' is supported.
+	// 3-letter ISO code for currency.
 	Currency string
 
 	// (Optional) An arbitrary string which you can attach to the invoice item.
@@ -42,6 +45,11 @@ type InvoiceItemParams struct {
 	// When left blank, the invoice item will be added to the next upcoming
 	// scheduled invoice.
 	Invoice string
+
+	// (Optional) The ID of a subscription to add this invoice item to.
+	Subscription string
+
+	Metadata map[string]string
 }
 
 // InvoiceItemClient encapsulates operations for creating, updating, deleting
@@ -60,12 +68,16 @@ func (c *InvoiceItemClient) Create(params *InvoiceItemParams) (*InvoiceItem, err
 	}
 
 	// add optional parameters
-	if len(params.Description) != 0 {
+	if params.Description != "" {
 		values.Add("description", params.Description)
 	}
-	if len(params.Invoice) != 0 {
+	if params.Invoice != "" {
 		values.Add("invoice", params.Invoice)
 	}
+	if params.Subscription != "" {
+		values.Add("subscription", params.Subscription)
+	}
+	appendMetadata(values, params.Metadata)
 
 	err := query("POST", "/invoiceitems", values, &item)
 	return &item, err
@@ -87,14 +99,15 @@ func (c *InvoiceItemClient) Retrieve(id string) (*InvoiceItem, error) {
 // see https://stripe.com/docs/api#update_invoiceitem
 func (c *InvoiceItemClient) Update(id string, params *InvoiceItemParams) (*InvoiceItem, error) {
 	item := InvoiceItem{}
-	values := url.Values{}
+	values := make(url.Values)
 
-	if len(params.Description) != 0 {
+	if params.Description != "" {
 		values.Add("description", params.Description)
 	}
 	if params.Amount != 0 {
 		values.Add("invoice", strconv.Itoa(params.Amount))
 	}
+	appendMetadata(values, params.Metadata)
 
 	err := query("POST", "/invoiceitems/"+url.QueryEscape(id), values, &item)
 	return &item, err
