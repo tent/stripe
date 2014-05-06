@@ -1,6 +1,7 @@
 package stripe
 
 import (
+	"fmt"
 	"net/url"
 	"strconv"
 )
@@ -129,16 +130,37 @@ func (c *CustomerClient) Update(id string, cust *CustomerParams) (*Customer, err
 	return &customer, err
 }
 
+func (c *CustomerClient) CreateCard(customerID, token string, card *CardParams) (*Card, error) {
+	params := make(url.Values)
+	if token != "" {
+		params.Add("card", token)
+	} else {
+		appendCardParams(params, card)
+	}
+	res := &Card{}
+	return res, query("POST", fmt.Sprintf("/customers/%s/cards", url.QueryEscape(customerID)), params, res)
+}
+
+func (c *CustomerClient) UpdateCard(customerID, cardID string, card *CardParams) (*Card, error) {
+	params := make(url.Values)
+	appendCardParams(params, card)
+	res := &Card{}
+	return res, query("POST", fmt.Sprintf("/customers/%s/cards/%s", url.QueryEscape(customerID), url.QueryEscape(cardID)), params, res)
+}
+
+func (c *CustomerClient) DeleteCard(customerID, cardID string) (bool, error) {
+	res := &DeleteResp{}
+	err := query("DELETE", fmt.Sprintf("/customers/%s/cards/%s", url.QueryEscape(customerID), url.QueryEscape(cardID)), nil, res)
+	return res.Deleted, err
+}
+
 // Deletes a Customer (permanently) with the given ID.
 //
 // see https://stripe.com/docs/api#delete_customer
 func (c *CustomerClient) Delete(id string) (bool, error) {
 	resp := DeleteResp{}
-	path := "/customers/" + url.QueryEscape(id)
-	if err := query("DELETE", path, nil, &resp); err != nil {
-		return false, err
-	}
-	return resp.Deleted, nil
+	err := query("DELETE", "/customers/"+url.QueryEscape(id), nil, &resp)
+	return resp.Deleted, err
 }
 
 // Returns a list of your Customers.
