@@ -95,7 +95,7 @@ type ChargeClient struct{}
 // Creates a new credit card Charge.
 //
 // see https://stripe.com/docs/api#create_charge
-func (c *ChargeClient) Create(params *ChargeParams) (*Charge, error) {
+func (ChargeClient) Create(params *ChargeParams) (*Charge, error) {
 	charge := Charge{}
 	values := url.Values{
 		"amount":   {strconv.Itoa(params.Amount)},
@@ -130,7 +130,7 @@ func (c *ChargeClient) Create(params *ChargeParams) (*Charge, error) {
 // Retrieves the details of a charge with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_charge
-func (c *ChargeClient) Retrieve(id string) (*Charge, error) {
+func (ChargeClient) Retrieve(id string) (*Charge, error) {
 	charge := Charge{}
 	path := "/charges/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &charge)
@@ -140,7 +140,7 @@ func (c *ChargeClient) Retrieve(id string) (*Charge, error) {
 // Refunds a charge for the full amount.
 //
 // see https://stripe.com/docs/api#refund_charge
-func (c *ChargeClient) Refund(id string) (*Charge, error) {
+func (ChargeClient) Refund(id string) (*Charge, error) {
 	values := url.Values{}
 	charge := Charge{}
 	path := "/charges/" + url.QueryEscape(id) + "/refund"
@@ -151,7 +151,7 @@ func (c *ChargeClient) Refund(id string) (*Charge, error) {
 // Refunds a charge for the specified amount.
 //
 // see https://stripe.com/docs/api#refund_charge
-func (c *ChargeClient) RefundAmount(id string, amt int) (*Charge, error) {
+func (ChargeClient) RefundAmount(id string, amt int) (*Charge, error) {
 	values := url.Values{
 		"amount": {strconv.Itoa(amt)},
 	}
@@ -164,18 +164,18 @@ func (c *ChargeClient) RefundAmount(id string, amt int) (*Charge, error) {
 // Returns a list of your Charges with the specified range.
 //
 // see https://stripe.com/docs/api#list_charges
-func (c *ChargeClient) List(limit int, before, after string) ([]*Charge, error) {
+func (c ChargeClient) List(limit int, before, after string) ([]*Charge, error) {
 	return c.list("", limit, before, after)
 }
 
 // Returns a list of your Charges with the given Customer ID.
 //
 // see https://stripe.com/docs/api#list_charges
-func (c *ChargeClient) CustomerList(id string, limit int, before, after string) ([]*Charge, error) {
+func (c ChargeClient) CustomerList(id string, limit int, before, after string) ([]*Charge, error) {
 	return c.list(id, limit, before, after)
 }
 
-func (c *ChargeClient) list(id string, limit int, before, after string) ([]*Charge, error) {
+func (ChargeClient) list(id string, limit int, before, after string) ([]*Charge, error) {
 	res := struct{ Data []*Charge }{}
 	params := listParams(limit, before, after)
 	if id != "" {

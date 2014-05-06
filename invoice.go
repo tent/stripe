@@ -63,7 +63,7 @@ type InvoiceClient struct{}
 // Retrieves the invoice with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_invoice
-func (c *InvoiceClient) Retrieve(id string) (*Invoice, error) {
+func (InvoiceClient) Retrieve(id string) (*Invoice, error) {
 	invoice := Invoice{}
 	path := "/invoices/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &invoice)
@@ -73,7 +73,7 @@ func (c *InvoiceClient) Retrieve(id string) (*Invoice, error) {
 // Retrieves the upcoming invoice the given customer ID.
 //
 // see https://stripe.com/docs/api#retrieve_customer_invoice
-func (c *InvoiceClient) RetrieveCustomer(cid string) (*Invoice, error) {
+func (InvoiceClient) RetrieveCustomer(cid string) (*Invoice, error) {
 	invoice := Invoice{}
 	values := url.Values{"customer": {cid}}
 	err := query("GET", "/invoices/upcoming", values, &invoice)
@@ -83,18 +83,18 @@ func (c *InvoiceClient) RetrieveCustomer(cid string) (*Invoice, error) {
 // Returns a list of Invoices at the specified range.
 //
 // see https://stripe.com/docs/api#list_customer_invoices
-func (c *InvoiceClient) List(limit int, before, after string) ([]*Invoice, error) {
+func (c InvoiceClient) List(limit int, before, after string) ([]*Invoice, error) {
 	return c.list("", limit, before, after)
 }
 
 // Returns a list of Invoices with the given Customer ID.
 //
 // see https://stripe.com/docs/api#list_customer_invoices
-func (c *InvoiceClient) CustomerList(id string, limit int, before, after string) ([]*Invoice, error) {
+func (c InvoiceClient) CustomerList(id string, limit int, before, after string) ([]*Invoice, error) {
 	return c.list(id, limit, before, after)
 }
 
-func (c *InvoiceClient) list(id string, limit int, before, after string) ([]*Invoice, error) {
+func (InvoiceClient) list(id string, limit int, before, after string) ([]*Invoice, error) {
 	res := struct{ Data []*Invoice }{}
 	params := listParams(limit, before, after)
 	// query for customer id, if provided

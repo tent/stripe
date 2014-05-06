@@ -73,7 +73,7 @@ type PlanParams struct {
 // Creates a new Plan.
 //
 // see https://stripe.com/docs/api#create_plan
-func (c *PlanClient) Create(params *PlanParams) (*Plan, error) {
+func (PlanClient) Create(params *PlanParams) (*Plan, error) {
 	plan := Plan{}
 	values := url.Values{
 		"id":       {params.ID},
@@ -102,7 +102,7 @@ func (c *PlanClient) Create(params *PlanParams) (*Plan, error) {
 // Retrieves the plan with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_plan
-func (c *PlanClient) Retrieve(id string) (*Plan, error) {
+func (PlanClient) Retrieve(id string) (*Plan, error) {
 	plan := Plan{}
 	path := "/plans/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &plan)
@@ -113,7 +113,7 @@ func (c *PlanClient) Retrieve(id string) (*Plan, error) {
 // by design, not editable.
 //
 // see https://stripe.com/docs/api#update_plan
-func (c *PlanClient) Update(id string, params *PlanParams) (*Plan, error) {
+func (PlanClient) Update(id string, params *PlanParams) (*Plan, error) {
 	values := make(url.Values)
 	if params.Name != "" {
 		values.Add("name", params.Name)
@@ -132,7 +132,7 @@ func (c *PlanClient) Update(id string, params *PlanParams) (*Plan, error) {
 // Deletes a plan with the given ID.
 //
 // see https://stripe.com/docs/api#delete_plan
-func (c *PlanClient) Delete(id string) (bool, error) {
+func (PlanClient) Delete(id string) (bool, error) {
 	resp := DeleteResp{}
 	path := "/plans/" + url.QueryEscape(id)
 	if err := query("DELETE", path, nil, &resp); err != nil {
@@ -144,7 +144,7 @@ func (c *PlanClient) Delete(id string) (bool, error) {
 // Returns a list of your Plans.
 //
 // see https://stripe.com/docs/api#list_Plans
-func (c *PlanClient) List(limit int, before, after string) ([]*Plan, error) {
+func (PlanClient) List(limit int, before, after string) ([]*Plan, error) {
 	res := struct{ Data []*Plan }{}
 	err := query("GET", "/plans", listParams(limit, before, after), &res)
 	return res.Data, err

@@ -75,7 +75,7 @@ type CouponParams struct {
 // Creates a new Coupon.
 //
 // see https://stripe.com/docs/api#create_coupon
-func (c *CouponClient) Create(params *CouponParams) (*Coupon, error) {
+func (CouponClient) Create(params *CouponParams) (*Coupon, error) {
 	coupon := Coupon{}
 	values := url.Values{
 		"duration":    {params.Duration},
@@ -108,7 +108,7 @@ func (c *CouponClient) Create(params *CouponParams) (*Coupon, error) {
 // Retrieves the coupon with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_coupon
-func (c *CouponClient) Retrieve(id string) (*Coupon, error) {
+func (CouponClient) Retrieve(id string) (*Coupon, error) {
 	coupon := Coupon{}
 	path := "/coupons/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &coupon)
@@ -118,7 +118,7 @@ func (c *CouponClient) Retrieve(id string) (*Coupon, error) {
 // Deletes the coupon with the given ID.
 //
 // see https://stripe.com/docs/api#delete_coupon
-func (c *CouponClient) Delete(id string) (bool, error) {
+func (CouponClient) Delete(id string) (bool, error) {
 	resp := DeleteResp{}
 	path := "/coupons/" + url.QueryEscape(id)
 	if err := query("DELETE", path, nil, &resp); err != nil {
@@ -130,7 +130,7 @@ func (c *CouponClient) Delete(id string) (bool, error) {
 // Returns a list of your coupons at the specified range.
 //
 // see https://stripe.com/docs/api#list_coupons
-func (c *CouponClient) List(limit int, before, after string) ([]*Coupon, error) {
+func (CouponClient) List(limit int, before, after string) ([]*Coupon, error) {
 	res := struct{ Data []*Coupon }{}
 	err := query("GET", "/coupons", listParams(limit, before, after), &res)
 	return res.Data, err

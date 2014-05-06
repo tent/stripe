@@ -59,7 +59,7 @@ type InvoiceItemClient struct{}
 // Create adds an arbitrary charge or credit to the customer's upcoming invoice.
 //
 // see https://stripe.com/docs/api#invoiceitem_object
-func (c *InvoiceItemClient) Create(params *InvoiceItemParams) (*InvoiceItem, error) {
+func (InvoiceItemClient) Create(params *InvoiceItemParams) (*InvoiceItem, error) {
 	item := InvoiceItem{}
 	values := url.Values{
 		"amount":   {strconv.Itoa(params.Amount)},
@@ -86,7 +86,7 @@ func (c *InvoiceItemClient) Create(params *InvoiceItemParams) (*InvoiceItem, err
 // Retrieves the Invoice Item with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_invoiceitem
-func (c *InvoiceItemClient) Retrieve(id string) (*InvoiceItem, error) {
+func (InvoiceItemClient) Retrieve(id string) (*InvoiceItem, error) {
 	item := InvoiceItem{}
 	path := "/invoiceitems/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &item)
@@ -97,7 +97,7 @@ func (c *InvoiceItemClient) Retrieve(id string) (*InvoiceItem, error) {
 // invoice, using the given Invoice Item ID.
 //
 // see https://stripe.com/docs/api#update_invoiceitem
-func (c *InvoiceItemClient) Update(id string, params *InvoiceItemParams) (*InvoiceItem, error) {
+func (InvoiceItemClient) Update(id string, params *InvoiceItemParams) (*InvoiceItem, error) {
 	item := InvoiceItem{}
 	values := make(url.Values)
 
@@ -116,7 +116,7 @@ func (c *InvoiceItemClient) Update(id string, params *InvoiceItemParams) (*Invoi
 // Removes an Invoice Item with the given ID.
 //
 // see https://stripe.com/docs/api#delete_invoiceitem
-func (c *InvoiceItemClient) Delete(id string) (bool, error) {
+func (InvoiceItemClient) Delete(id string) (bool, error) {
 	resp := DeleteResp{}
 	path := "/invoiceitems/" + url.QueryEscape(id)
 	if err := query("DELETE", path, nil, &resp); err != nil {
@@ -128,18 +128,18 @@ func (c *InvoiceItemClient) Delete(id string) (bool, error) {
 // Returns a list of Invoice Items.
 //
 // see https://stripe.com/docs/api#list_invoiceitems
-func (c *InvoiceItemClient) List(limit int, before, after string) ([]*InvoiceItem, error) {
+func (c InvoiceItemClient) List(limit int, before, after string) ([]*InvoiceItem, error) {
 	return c.list("", limit, before, after)
 }
 
 // Returns a list of Invoice Items for the specified Customer ID.
 //
 // see https://stripe.com/docs/api#list_invoiceitems
-func (c *InvoiceItemClient) CustomerListN(id string, limit int, before, after string) ([]*InvoiceItem, error) {
+func (c InvoiceItemClient) CustomerListN(id string, limit int, before, after string) ([]*InvoiceItem, error) {
 	return c.list(id, limit, before, after)
 }
 
-func (c *InvoiceItemClient) list(id string, limit int, before, after string) ([]*InvoiceItem, error) {
+func (InvoiceItemClient) list(id string, limit int, before, after string) ([]*InvoiceItem, error) {
 	res := struct{ Data []*InvoiceItem }{}
 	params := listParams(limit, before, after)
 	if id != "" {

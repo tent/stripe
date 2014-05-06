@@ -20,21 +20,16 @@ type Token struct {
 // the Stripe REST API.
 type TokenClient struct{}
 
-// TokenParams encapsulates options for creating a new Card Token.
-type TokenParams struct {
-	Card *CardParams
-}
-
 // Creates a single use token that wraps the details of a credit card.
 // This token can be used in place of a credit card hash with any API method.
 // These tokens can only be used once: by creating a new charge object, or
 // attaching them to a customer.
 //
 // see https://stripe.com/docs/api#create_token
-func (c *TokenClient) Create(params *TokenParams) (*Token, error) {
+func (TokenClient) Create(params *CardParams) (*Token, error) {
 	token := &Token{}
 	values := make(url.Values)
-	appendCardParams(values, params.Card)
+	appendCardParams(values, params)
 
 	err := query("POST", "/tokens", values, token)
 	return token, err
@@ -43,7 +38,7 @@ func (c *TokenClient) Create(params *TokenParams) (*Token, error) {
 // Retrieves the card token with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_token
-func (c *TokenClient) Retrieve(id string) (*Token, error) {
+func (TokenClient) Retrieve(id string) (*Token, error) {
 	token := Token{}
 	path := "/tokens/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &token)

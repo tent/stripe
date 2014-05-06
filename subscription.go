@@ -71,7 +71,7 @@ type SubscriptionParams struct {
 // Subscribes a customer to a new plan.
 //
 // see https://stripe.com/docs/api#update_subscription
-func (c *SubscriptionClient) Update(customerID string, params *SubscriptionParams) (*Subscription, error) {
+func (SubscriptionClient) Update(customerID string, params *SubscriptionParams) (*Subscription, error) {
 	values := url.Values{"plan": {params.Plan}}
 
 	// set optional parameters
@@ -104,7 +104,7 @@ func (c *SubscriptionClient) Update(customerID string, params *SubscriptionParam
 // subscription immediately.
 //
 // see https://stripe.com/docs/api#cancel_subscription
-func (c *SubscriptionClient) Cancel(customerID string) (*Subscription, error) {
+func (SubscriptionClient) Cancel(customerID string) (*Subscription, error) {
 	s := Subscription{}
 	path := "/customers/" + url.QueryEscape(customerID) + "/subscription"
 	err := query("DELETE", path, nil, &s)
@@ -114,7 +114,7 @@ func (c *SubscriptionClient) Cancel(customerID string) (*Subscription, error) {
 // Cancels the customer's subscription at the end of the billing period.
 //
 // see https://stripe.com/docs/api#cancel_subscription
-func (c *SubscriptionClient) CancelAtPeriodEnd(customerID string) (*Subscription, error) {
+func (SubscriptionClient) CancelAtPeriodEnd(customerID string) (*Subscription, error) {
 	values := url.Values{}
 	values.Add("at_period_end", "true")
 
