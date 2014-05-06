@@ -135,7 +135,7 @@ func (c InvoiceItemClient) List(limit int, before, after string) ([]*InvoiceItem
 // Returns a list of Invoice Items for the specified Customer ID.
 //
 // see https://stripe.com/docs/api#list_invoiceitems
-func (c InvoiceItemClient) CustomerListN(id string, limit int, before, after string) ([]*InvoiceItem, error) {
+func (c InvoiceItemClient) CustomerList(id string, limit int, before, after string) ([]*InvoiceItem, error) {
 	return c.list(id, limit, before, after)
 }
 
