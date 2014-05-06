@@ -164,23 +164,26 @@ func (ChargeClient) RefundAmount(id string, amt int) (*Charge, error) {
 // Returns a list of your Charges with the specified range.
 //
 // see https://stripe.com/docs/api#list_charges
-func (c ChargeClient) List(limit int, before, after string) ([]*Charge, error) {
+func (c ChargeClient) List(limit int, before, after string) ([]*Charge, bool, error) {
 	return c.list("", limit, before, after)
 }
 
 // Returns a list of your Charges with the given Customer ID.
 //
 // see https://stripe.com/docs/api#list_charges
-func (c ChargeClient) CustomerList(id string, limit int, before, after string) ([]*Charge, error) {
+func (c ChargeClient) CustomerList(id string, limit int, before, after string) ([]*Charge, bool, error) {
 	return c.list(id, limit, before, after)
 }
 
-func (ChargeClient) list(id string, limit int, before, after string) ([]*Charge, error) {
-	res := struct{ Data []*Charge }{}
+func (ChargeClient) list(id string, limit int, before, after string) ([]*Charge, bool, error) {
+	res := struct {
+		ListObject
+		Data []*Charge
+	}{}
 	params := listParams(limit, before, after)
 	if id != "" {
 		params.Add("customer", id)
 	}
 	err := query("GET", "/charges", params, &res)
-	return res.Data, err
+	return res.Data, res.More, err
 }

@@ -17,13 +17,11 @@ func init() {
 var (
 
 	// Charge with only the required fields
-	token1 = TokenParams{
-		Card: &CardParams{
-			Name:     "George Costanza",
-			Number:   "4242424242424242",
-			ExpYear:  time.Now().Year() + 1,
-			ExpMonth: 5,
-		},
+	token1 = CardParams{
+		Name:     "George Costanza",
+		Number:   "4242424242424242",
+		ExpYear:  time.Now().Year() + 1,
+		ExpMonth: 5,
 	}
 )
 
@@ -46,14 +44,14 @@ func TestCreateToken(t *testing.T) {
 		t.Errorf("Expected Token Card not nil")
 		return
 	}
-	if resp.Card.Name != token1.Card.Name {
-		t.Errorf("Expected Token Card Name %s, got %s", token1.Card.Name, resp.Card.Name)
+	if resp.Card.Name != token1.Name {
+		t.Errorf("Expected Token Card Name %s, got %s", token1.Name, resp.Card.Name)
 	}
-	if resp.Card.ExpMonth != token1.Card.ExpMonth {
-		t.Errorf("Expected Token Card ExpMonth %d, got %d", token1.Card.ExpMonth, resp.Card.ExpMonth)
+	if resp.Card.ExpMonth != token1.ExpMonth {
+		t.Errorf("Expected Token Card ExpMonth %d, got %d", token1.ExpMonth, resp.Card.ExpMonth)
 	}
-	if resp.Card.ExpYear != token1.Card.ExpYear {
-		t.Errorf("Expected Token Card ExpYear %d, got %d", token1.Card.ExpYear, resp.Card.ExpYear)
+	if resp.Card.ExpYear != token1.ExpYear {
+		t.Errorf("Expected Token Card ExpYear %d, got %d", token1.ExpYear, resp.Card.ExpYear)
 	}
 	if resp.Card.Last4 != "4242" {
 		t.Errorf("Expected Token Card Last4 4242, got %s", resp.Card.Last4)

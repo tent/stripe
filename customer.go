@@ -141,10 +141,13 @@ func (CustomerClient) Delete(id string) (bool, error) {
 // Returns a list of your Customers at the specified range.
 //
 // see https://stripe.com/docs/api#list_customers
-func (CustomerClient) List(limit int, before, after string) ([]*Customer, error) {
-	res := struct{ Data []*Customer }{}
+func (CustomerClient) List(limit int, before, after string) ([]*Customer, bool, error) {
+	res := struct {
+		ListObject
+		Data []*Customer
+	}{}
 	err := query("GET", "/customers", listParams(limit, before, after), &res)
-	return res.Data, err
+	return res.Data, res.More, err
 }
 
 ////////////////////////////////////////////////////////////////////////////////

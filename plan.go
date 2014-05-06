@@ -144,8 +144,11 @@ func (PlanClient) Delete(id string) (bool, error) {
 // Returns a list of your Plans.
 //
 // see https://stripe.com/docs/api#list_Plans
-func (PlanClient) List(limit int, before, after string) ([]*Plan, error) {
-	res := struct{ Data []*Plan }{}
+func (PlanClient) List(limit int, before, after string) ([]*Plan, bool, error) {
+	res := struct {
+		ListObject
+		Data []*Plan
+	}{}
 	err := query("GET", "/plans", listParams(limit, before, after), &res)
-	return res.Data, err
+	return res.Data, res.More, err
 }

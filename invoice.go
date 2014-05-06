@@ -83,24 +83,27 @@ func (InvoiceClient) RetrieveCustomer(cid string) (*Invoice, error) {
 // Returns a list of Invoices at the specified range.
 //
 // see https://stripe.com/docs/api#list_customer_invoices
-func (c InvoiceClient) List(limit int, before, after string) ([]*Invoice, error) {
+func (c InvoiceClient) List(limit int, before, after string) ([]*Invoice, bool, error) {
 	return c.list("", limit, before, after)
 }
 
 // Returns a list of Invoices with the given Customer ID.
 //
 // see https://stripe.com/docs/api#list_customer_invoices
-func (c InvoiceClient) CustomerList(id string, limit int, before, after string) ([]*Invoice, error) {
+func (c InvoiceClient) CustomerList(id string, limit int, before, after string) ([]*Invoice, bool, error) {
 	return c.list(id, limit, before, after)
 }
 
-func (InvoiceClient) list(id string, limit int, before, after string) ([]*Invoice, error) {
-	res := struct{ Data []*Invoice }{}
+func (InvoiceClient) list(id string, limit int, before, after string) ([]*Invoice, bool, error) {
+	res := struct {
+		ListObject
+		Data []*Invoice
+	}{}
 	params := listParams(limit, before, after)
 	// query for customer id, if provided
 	if id != "" {
 		params.Add("customer", id)
 	}
 	err := query("GET", "/invoices", params, &res)
-	return res.Data, err
+	return res.Data, res.More, err
 }

@@ -202,7 +202,7 @@ func TestListCustomers(t *testing.T) {
 	defer Customers.Delete(resp2.ID)
 
 	// get the list from Stripe
-	customers, err := Customers.List(2, "", "")
+	customers, _, err := Customers.List(2, "", "")
 	if err != nil {
 		t.Errorf("Expected Customer List, got Error %s", err.Error())
 	}

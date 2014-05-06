@@ -130,8 +130,11 @@ func (CouponClient) Delete(id string) (bool, error) {
 // Returns a list of your coupons at the specified range.
 //
 // see https://stripe.com/docs/api#list_coupons
-func (CouponClient) List(limit int, before, after string) ([]*Coupon, error) {
-	res := struct{ Data []*Coupon }{}
+func (CouponClient) List(limit int, before, after string) ([]*Coupon, bool, error) {
+	res := struct {
+		ListObject
+		Data []*Coupon
+	}{}
 	err := query("GET", "/coupons", listParams(limit, before, after), &res)
-	return res.Data, err
+	return res.Data, res.More, err
 }

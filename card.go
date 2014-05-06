@@ -105,7 +105,7 @@ func (CardClient) Retrieve(customerID, cardID string) (*Card, error) {
 
 func (CardClient) List(customerID string, limit int, before, after string) ([]*Card, bool, error) {
 	res := struct {
-		More bool `json:"has_more"`
+		ListObject
 		Data []*Card
 	}{}
 	err := query("GET", fmt.Sprintf("/customers/%s/cards", url.QueryEscape(customerID)), listParams(limit, before, after), &res)
