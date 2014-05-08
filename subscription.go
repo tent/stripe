@@ -102,7 +102,7 @@ func (c SubscriptionClient) values(params *SubscriptionParams) url.Values {
 	if params.Token != "" {
 		values.Add("card", params.Token)
 	} else if params.Card != nil {
-		appendCardParams(values, params.Card)
+		appendCardParams(values, true, params.Card)
 	}
 	return values
 }

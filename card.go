@@ -87,7 +87,7 @@ func (c CardClient) Create(customerID, token string, card *CardParams) (*Card, e
 	if token != "" {
 		params.Add("card", token)
 	} else {
-		appendCardParams(params, card)
+		appendCardParams(params, false, card)
 	}
 	res := &Card{}
 	return res, query("POST", c.path(customerID, ""), params, res)
@@ -95,7 +95,7 @@ func (c CardClient) Create(customerID, token string, card *CardParams) (*Card, e
 
 func (c CardClient) Update(customerID, cardID string, card *CardParams) (*Card, error) {
 	params := make(url.Values)
-	appendCardParams(params, card)
+	appendCardParams(params, false, card)
 	res := &Card{}
 	return res, query("POST", c.path(customerID, cardID), params, res)
 }

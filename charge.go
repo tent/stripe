@@ -115,7 +115,7 @@ func (ChargeClient) Create(params *ChargeParams) (*Charge, error) {
 
 	// add optional credit card details, if specified
 	if params.Card != nil {
-		appendCardParams(values, params.Card)
+		appendCardParams(values, true, params.Card)
 	} else if len(params.Token) > 0 {
 		values.Add("card", params.Token)
 	} else {

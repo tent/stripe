@@ -29,7 +29,7 @@ type TokenClient struct{}
 func (TokenClient) Create(params *CardParams) (*Token, error) {
 	token := &Token{}
 	values := make(url.Values)
-	appendCardParams(values, params)
+	appendCardParams(values, true, params)
 
 	err := query("POST", "/tokens", values, token)
 	return token, err

@@ -180,41 +180,47 @@ func appendCustomerParams(values url.Values, c *CustomerParams) {
 
 	// add optional credit card details, if specified
 	if c.Card != nil {
-		appendCardParams(values, c.Card)
+		appendCardParams(values, true, c.Card)
 	} else if c.Token != "" {
 		values.Add("card", c.Token)
 	}
 }
 
-func appendCardParams(values url.Values, c *CardParams) {
+func appendCardParams(values url.Values, nested bool, c *CardParams) {
+	p := func(s string) string {
+		if nested {
+			return "card[" + s + "]"
+		}
+		return s
+	}
 	if c.Number != "" {
-		values.Add("card[number]", c.Number)
+		values.Add(p("number"), c.Number)
 	}
 	if c.ExpMonth != 0 {
-		values.Add("card[exp_month]", strconv.Itoa(c.ExpMonth))
+		values.Add(p("exp_month"), strconv.Itoa(c.ExpMonth))
 	}
 	if c.ExpMonth != 0 {
-		values.Add("card[exp_year]", strconv.Itoa(c.ExpYear))
+		values.Add(p("exp_year"), strconv.Itoa(c.ExpYear))
 	}
 	if c.Name != "" {
-		values.Add("card[name]", c.Name)
+		values.Add(p("name"), c.Name)
 	}
 	if c.CVC != "" {
-		values.Add("card[cvc]", c.CVC)
+		values.Add(p("cvc"), c.CVC)
 	}
 	if c.Address1 != "" {
-		values.Add("card[address_line1]", c.Address1)
+		values.Add(p("address_line1"), c.Address1)
 	}
 	if c.Address2 != "" {
-		values.Add("card[address_line2]", c.Address2)
+		values.Add(p("address_line2"), c.Address2)
 	}
 	if c.AddressZip != "" {
-		values.Add("card[address_zip]", c.AddressZip)
+		values.Add(p("address_zip"), c.AddressZip)
 	}
 	if c.AddressState != "" {
-		values.Add("card[address_state]", c.AddressState)
+		values.Add(p("address_state"), c.AddressState)
 	}
 	if c.AddressCountry != "" {
-		values.Add("card[address_country]", c.AddressCountry)
+		values.Add(p("address_country"), c.AddressCountry)
 	}
 }
