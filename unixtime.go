@@ -24,7 +24,7 @@ func (t *UnixTime) UnmarshalJSON(data []byte) error {
 			return UnixTimeUnmarshalError
 		}
 	}
-	t.Time = time.Unix(0, i*int64(time.Millisecond))
+	t.Time = time.Unix(i, 0)
 	return nil
 }
 
