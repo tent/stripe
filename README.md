@@ -79,3 +79,7 @@ go test -v
 The unit tests attempt to cleanup after themselves whenever possible. You can
 manually clear all test data from the Stripe console by navigating to: Your 
 Account » Account Settings » Test Data. Then click the "Remove All Test Data" button.
+
+## Credits
+
+This is a fork of [drone/go.stripe](https://github.com/drone/go.stripe).
