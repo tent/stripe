@@ -102,7 +102,7 @@ func (PlanClient) Create(params *PlanParams) (*Plan, error) {
 // Retrieves the plan with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_plan
-func (PlanClient) Retrieve(id string) (*Plan, error) {
+func (PlanClient) Get(id string) (*Plan, error) {
 	plan := Plan{}
 	path := "/plans/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &plan)

@@ -124,7 +124,7 @@ func (c SubscriptionClient) Cancel(customerID, subscriptionID string, atPeriodEn
 	return res, query("DELETE", c.path(customerID, subscriptionID), values, res)
 }
 
-func (c SubscriptionClient) Retrieve(customerID, subscriptionID string) (*Subscription, error) {
+func (c SubscriptionClient) Get(customerID, subscriptionID string) (*Subscription, error) {
 	res := &Subscription{}
 	return res, query("GET", c.path(customerID, subscriptionID), nil, res)
 }

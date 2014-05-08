@@ -117,7 +117,7 @@ func TestRetrieveCharge(t *testing.T) {
 	}
 
 	// Retrieve the charge from the database
-	_, err = Charges.Retrieve(resp.ID)
+	_, err = Charges.Get(resp.ID)
 	if err != nil {
 		t.Errorf("Expected to retrieve Charge by ID, got Error %s", err.Error())
 		return

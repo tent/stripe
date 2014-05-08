@@ -110,7 +110,7 @@ func (CustomerClient) Create(cust *CustomerParams) (*Customer, error) {
 // Retrieves a Customer with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_customer
-func (CustomerClient) Retrieve(id string) (*Customer, error) {
+func (CustomerClient) Get(id string) (*Customer, error) {
 	customer := Customer{}
 	path := "/customers/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &customer)

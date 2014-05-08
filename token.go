@@ -38,7 +38,7 @@ func (TokenClient) Create(params *CardParams) (*Token, error) {
 // Retrieves the card token with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_token
-func (TokenClient) Retrieve(id string) (*Token, error) {
+func (TokenClient) Get(id string) (*Token, error) {
 	token := Token{}
 	path := "/tokens/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &token)

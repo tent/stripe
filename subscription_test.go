@@ -85,7 +85,7 @@ func TestCreateSubscriptionCard(t *testing.T) {
 	}
 
 	// Check to see if the customer's card was added
-	cust, _ = Customers.Retrieve(cust.ID)
+	cust, _ = Customers.Get(cust.ID)
 	if cust.DefaultCard == "" {
 		t.Errorf("Expected Subscription to assign a new active customer card")
 	}
@@ -115,7 +115,7 @@ func TestCreateSubscriptionToken(t *testing.T) {
 	}
 
 	// Check to see if the customer's card was added
-	cust, _ = Customers.Retrieve(cust.ID)
+	cust, _ = Customers.Get(cust.ID)
 	if cust.DefaultCard == "" {
 		t.Errorf("Expected Subscription to assign a new active customer card")
 	}

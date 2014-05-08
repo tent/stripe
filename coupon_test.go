@@ -78,7 +78,7 @@ func TestRetrieveCoupon(t *testing.T) {
 	defer Coupons.Delete(c2.ID)
 
 	// now let's retrieve the recently added coupon
-	coupon, err := Coupons.Retrieve(c2.ID)
+	coupon, err := Coupons.Get(c2.ID)
 	if err != nil {
 		t.Errorf("Expected Coupon %s, got Error %s", c2.ID, err.Error())
 	}
@@ -96,7 +96,7 @@ func TestRetrieveCoupon(t *testing.T) {
 
 	// now let's try to retrieve a coupon that doesn't exist, and make sure
 	// we can handle the error
-	_, err = Coupons.Retrieve("free for life")
+	_, err = Coupons.Get("free for life")
 	if err == nil {
 		t.Error("Expected non-null Error when coupon not found.")
 	}

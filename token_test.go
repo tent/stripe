@@ -68,7 +68,7 @@ func TestRetrieveToken(t *testing.T) {
 	}
 
 	// Retrieve the Token from the database
-	_, err = Tokens.Retrieve(resp.ID)
+	_, err = Tokens.Get(resp.ID)
 	if err != nil {
 		t.Errorf("Expected to retrieve Token by ID, got Error %s", err.Error())
 		return

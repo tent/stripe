@@ -120,7 +120,7 @@ func TestRetrieveCustomer(t *testing.T) {
 	}
 
 	// Retrieve the Customer by ID
-	cust, err := Customers.Retrieve(resp.ID)
+	cust, err := Customers.Get(resp.ID)
 	if err != nil {
 		t.Errorf("Expected Customer, got Error %s", err.Error())
 	}

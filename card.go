@@ -106,7 +106,7 @@ func (c CardClient) Delete(customerID, cardID string) (bool, error) {
 	return res.Deleted, err
 }
 
-func (c CardClient) Retrieve(customerID, cardID string) (*Card, error) {
+func (c CardClient) Get(customerID, cardID string) (*Card, error) {
 	res := &Card{}
 	return res, query("GET", c.path(customerID, cardID), nil, res)
 }

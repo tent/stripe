@@ -130,7 +130,7 @@ func (ChargeClient) Create(params *ChargeParams) (*Charge, error) {
 // Retrieves the details of a charge with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_charge
-func (ChargeClient) Retrieve(id string) (*Charge, error) {
+func (ChargeClient) Get(id string) (*Charge, error) {
 	charge := Charge{}
 	path := "/charges/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &charge)

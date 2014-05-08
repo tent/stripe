@@ -86,7 +86,7 @@ func (InvoiceItemClient) Create(params *InvoiceItemParams) (*InvoiceItem, error)
 // Retrieves the Invoice Item with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_invoiceitem
-func (InvoiceItemClient) Retrieve(id string) (*InvoiceItem, error) {
+func (InvoiceItemClient) Get(id string) (*InvoiceItem, error) {
 	item := InvoiceItem{}
 	path := "/invoiceitems/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &item)

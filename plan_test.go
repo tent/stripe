@@ -91,7 +91,7 @@ func TestRetrievePlan(t *testing.T) {
 	defer Plans.Delete(p2.ID)
 
 	// Retrieve the Plan by ID
-	plan, err := Plans.Retrieve(p2.ID)
+	plan, err := Plans.Get(p2.ID)
 	if err != nil {
 		t.Errorf("Expected Plan %s, got Error %s", p2.ID, err.Error())
 	}

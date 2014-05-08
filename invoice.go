@@ -63,7 +63,7 @@ type InvoiceClient struct{}
 // Retrieves the invoice with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_invoice
-func (InvoiceClient) Retrieve(id string) (*Invoice, error) {
+func (InvoiceClient) Get(id string) (*Invoice, error) {
 	invoice := Invoice{}
 	path := "/invoices/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &invoice)

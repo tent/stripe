@@ -108,7 +108,7 @@ func (CouponClient) Create(params *CouponParams) (*Coupon, error) {
 // Retrieves the coupon with the given ID.
 //
 // see https://stripe.com/docs/api#retrieve_coupon
-func (CouponClient) Retrieve(id string) (*Coupon, error) {
+func (CouponClient) Get(id string) (*Coupon, error) {
 	coupon := Coupon{}
 	path := "/coupons/" + url.QueryEscape(id)
 	err := query("GET", path, nil, &coupon)
