@@ -11,27 +11,28 @@ import (
 //
 // see https://stripe.com/docs/api#invoice_object
 type Invoice struct {
-	ID                 string        `json:"id"`
-	AmountDue          int           `json:"amount_due"`
-	AttemptCount       int           `json:"attempt_count"`
-	Attempted          bool          `json:"attempted"`
-	Closed             bool          `json:"closed"`
-	Paid               bool          `json:"paid"`
-	PeriodEnd          UnixTime      `json:"period_end"`
-	PeriodStart        UnixTime      `json:"period_start"`
-	Subtotal           int           `json:"subtotal"`
-	Total              int           `json:"total"`
-	Currency           string        `json:"currency"`
-	Charge             string        `json:"charge,omitempty"`
-	Customer           string        `json:"customer"`
-	Date               UnixTime      `json:"date"`
-	Discount           *Discount     `json:"discount,omitempty"`
-	Lines              *InvoiceLines `json:"lines"`
-	StartingBalance    int           `json:"starting_balance"`
-	EndingBalance      int           `json:"ending_balance"`
-	NextPaymentAttempt *UnixTime     `json:"next_payment_attempt,omitempty"`
-	ApplicationFee     int           `json:"application_fee,omitempty"`
-	Livemode           bool          `json:"livemode"`
+	ID                 string            `json:"id"`
+	AmountDue          int               `json:"amount_due"`
+	AttemptCount       int               `json:"attempt_count"`
+	Attempted          bool              `json:"attempted"`
+	Closed             bool              `json:"closed"`
+	Paid               bool              `json:"paid"`
+	PeriodEnd          UnixTime          `json:"period_end"`
+	PeriodStart        UnixTime          `json:"period_start"`
+	Subtotal           int               `json:"subtotal"`
+	Total              int               `json:"total"`
+	Currency           string            `json:"currency"`
+	Charge             string            `json:"charge,omitempty"`
+	Customer           string            `json:"customer"`
+	Date               UnixTime          `json:"date"`
+	Discount           *Discount         `json:"discount,omitempty"`
+	Lines              *InvoiceLines     `json:"lines"`
+	StartingBalance    int               `json:"starting_balance"`
+	EndingBalance      int               `json:"ending_balance"`
+	NextPaymentAttempt *UnixTime         `json:"next_payment_attempt,omitempty"`
+	Livemode           bool              `json:"livemode"`
+	Metadata           map[string]string `json:"metadata"`
+	Description        string            `json:"omitempty"`
 }
 
 // InvoiceLines represents an individual line items that is part of an invoice.
@@ -51,7 +52,7 @@ type InvoiceLineItem struct {
 	Description string            `json:"description,omitempty"`
 	Metadata    map[string]string `json:"metadata"`
 	Plan        *Plan             `json:"plan,omitempty"`
-	Quantity    int               `json:"quantity"`
+	Quantity    int               `json:"quantity,omitempty"`
 }
 
 type Period struct {
