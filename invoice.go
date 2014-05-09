@@ -1,6 +1,9 @@
 package stripe
 
-import "net/url"
+import (
+	"fmt"
+	"net/url"
+)
 
 // Invoice represents statements of what a customer owes for a particular
 // billing period, including subscriptions, invoice items, and any automatic
@@ -56,6 +59,24 @@ type Period struct {
 	End   UnixTime `json:"end"`
 }
 
+type InvoiceParams struct {
+	// The customer ID to invoice
+	Customer string
+
+	// (Optional) Invoice description
+	Description string
+
+	// (Optional) Invoice metadata
+	Metadata map[string]string
+
+	// (Optional) The ID of the subscription to invoice. If not set, the created
+	// invoice will include all pending invoice items for the customer.
+	Subscription string
+
+	// (Optional) Boolean representing whether an invoice is closed or not.
+	Closed *bool
+}
+
 // InvoiceClient encapsulates operations for querying invoices using the Stripe
 // REST API.
 type InvoiceClient struct{}
@@ -64,20 +85,31 @@ type InvoiceClient struct{}
 //
 // see https://stripe.com/docs/api#retrieve_invoice
 func (InvoiceClient) Get(id string) (*Invoice, error) {
-	invoice := Invoice{}
-	path := "/invoices/" + url.QueryEscape(id)
-	err := query("GET", path, nil, &invoice)
-	return &invoice, err
+	res := &Invoice{}
+	return res, query("GET", "/invoices/"+url.QueryEscape(id), nil, res)
+}
+
+func (InvoiceClient) Create(params *InvoiceParams) (*Invoice, error) {
+	res := &Invoice{}
+	return res, query("POST", "/invoices", invoiceValues(params), res)
+}
+
+func (InvoiceClient) Update(id string, params *InvoiceParams) (*Invoice, error) {
+	res := &Invoice{}
+	return res, query("POST", "/invoices/"+url.QueryEscape(id), invoiceValues(params), res)
+}
+
+func (InvoiceClient) Pay(id string) (*Invoice, error) {
+	res := &Invoice{}
+	return res, query("POST", fmt.Sprintf("/invoices/%s/pay", url.QueryEscape(id)), nil, res)
 }
 
 // Retrieves the upcoming invoice the given customer ID.
 //
 // see https://stripe.com/docs/api#retrieve_customer_invoice
-func (InvoiceClient) RetrieveCustomer(cid string) (*Invoice, error) {
-	invoice := Invoice{}
-	values := url.Values{"customer": {cid}}
-	err := query("GET", "/invoices/upcoming", values, &invoice)
-	return &invoice, err
+func (InvoiceClient) Upcoming(customerID string) (*Invoice, error) {
+	res := &Invoice{}
+	return res, query("GET", "/invoices/upcoming", url.Values{"customer": {customerID}}, res)
 }
 
 // Returns a list of Invoices at the specified range.
@@ -106,4 +138,22 @@ func (InvoiceClient) list(id string, limit int, before, after string) ([]*Invoic
 	}
 	err := query("GET", "/invoices", params, &res)
 	return res.Data, res.More, err
+}
+
+func invoiceValues(inv *InvoiceParams) url.Values {
+	values := make(url.Values)
+	if inv.Customer != "" {
+		values.Add("customer", inv.Customer)
+	}
+	if inv.Description != "" {
+		values.Add("description", inv.Description)
+	}
+	if inv.Subscription != "" {
+		values.Add("subscription", inv.Subscription)
+	}
+	if inv.Closed != nil {
+		values.Add("closed", fmt.Sprintf("%t", *inv.Closed))
+	}
+	appendMetadata(values, inv.Metadata)
+	return values
 }
